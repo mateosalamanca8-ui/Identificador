@@ -1,0 +1,405 @@
+<title>Lector de Indicadores</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: banco de trabajo de dos columnas — entrada a la izquierda, informe a la derecha; una columna en móvil */
+:root{
+  --bg:#F3F5F7; --surface:#FFFFFF; --sunk:#E8ECF0; --line:#D3DAE1;
+  --fg:#16212B; --muted:#5A6B7A; --accent:#1D5C8C; --accent-ink:#FFFFFF;
+  --good:#1F7A4D; --warn:#A86A00; --crit:#B3362B;
+  --good-bg:#E3F2EA; --warn-bg:#FBF0DC; --crit-bg:#F8E3E1;
+  --f-display:"Archivo",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F161D; --surface:#17212B; --sunk:#111A22; --line:#2A3846;
+  --fg:#E4EAF0; --muted:#93A4B4; --accent:#6CAEE0; --accent-ink:#0B1218;
+  --good:#5BC48D; --warn:#E3A93C; --crit:#EE7B70;
+  --good-bg:#16302A; --warn-bg:#33281A; --crit-bg:#3A1F1F; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F161D; --surface:#17212B; --sunk:#111A22; --line:#2A3846;
+  --fg:#E4EAF0; --muted:#93A4B4; --accent:#6CAEE0; --accent-ink:#0B1218;
+  --good:#5BC48D; --warn:#E3A93C; --crit:#EE7B70;
+  --good-bg:#16302A; --warn-bg:#33281A; --crit-bg:#3A1F1F; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 48px}
+.wrap{max-width:1180px;margin:0 auto;display:grid;gap:20px}
+header h1{font-family:var(--f-display);font-weight:800;font-size:clamp(26px,4vw,34px);letter-spacing:-.01em;margin:0;text-wrap:balance}
+header p{margin:4px 0 0;color:var(--muted);max-width:68ch}
+.grid{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;display:grid;gap:14px;min-width:0}
+.label{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.drop{border:1.5px dashed var(--line);border-radius:8px;padding:18px;text-align:center;background:var(--sunk);cursor:pointer;display:grid;gap:4px}
+.drop:hover,.drop.over{border-color:var(--accent)}
+.drop strong{font-family:var(--f-display);font-weight:700}
+.drop small{color:var(--muted)}
+.files{display:grid;gap:6px;list-style:none;margin:0;padding:0}
+.files li{display:flex;gap:8px;align-items:center;font-size:13px;background:var(--sunk);border-radius:6px;padding:6px 8px;min-width:0}
+.files li span.n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tag{font-family:var(--f-mono);font-size:11px;padding:1px 6px;border-radius:4px;background:var(--surface);border:1px solid var(--line);color:var(--muted)}
+.files button{background:none;border:0;color:var(--muted);cursor:pointer;font-size:16px;line-height:1}
+.thumbs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+.thumbs img{height:54px;border-radius:4px;border:1px solid var(--line);flex:none}
+label.f{display:grid;gap:4px;font-size:13px;font-weight:500}
+select,input[type=text],textarea{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%}
+textarea{min-height:70px;resize:vertical}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.btn{font:inherit;font-weight:600;border-radius:6px;padding:10px 16px;cursor:pointer;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn:disabled{opacity:.5;cursor:default}
+.status{font-size:13px;color:var(--muted);min-height:1.2em}
+.status.err{color:var(--crit)}
+.report{display:grid;gap:18px;min-width:0}
+.example{font-size:12px;font-weight:600;color:var(--warn);background:var(--warn-bg);border-radius:4px;padding:2px 8px;justify-self:start}
+.verdict{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.pill{font-family:var(--f-mono);font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;padding:4px 10px;border-radius:999px;white-space:nowrap}
+.s-bueno{color:var(--good);background:var(--good-bg)} .s-atencion{color:var(--warn);background:var(--warn-bg)} .s-critico{color:var(--crit);background:var(--crit-bg)}
+h2{font-family:var(--f-display);font-weight:700;font-size:19px;margin:0}
+h3{font-family:var(--f-display);font-weight:700;font-size:15px;margin:0}
+.tablebox{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:var(--sunk);font-weight:600}
+tr:last-child td{border-bottom:0}
+td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+td.st{border-left:3px solid transparent}
+td.st.bueno{border-left-color:var(--good)} td.st.atencion{border-left-color:var(--warn)} td.st.critico{border-left-color:var(--crit)}
+.priority{border:1px solid var(--accent);border-radius:8px;padding:14px;display:grid;gap:4px}
+.priority .label{color:var(--accent)}
+.priority p{margin:0}
+.priority .a{font-weight:600;font-size:16px}
+ul.plain{margin:0;padding-left:18px;display:grid;gap:4px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:640px){.two{grid-template-columns:1fr}}
+.prio{font-family:var(--f-mono);font-size:11px;text-transform:uppercase}
+.prio.alta{color:var(--crit)} .prio.media{color:var(--warn)} .prio.baja{color:var(--muted)}
+.src{font-size:13px;color:var(--muted)}
+.how{background:var(--sunk);border-radius:8px;padding:14px;display:grid;gap:10px;font-size:14px}
+@media (prefers-reduced-motion:no-preference){.report{transition:opacity .2s}}
+.busy{opacity:.55}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Lector de Indicadores</h1>
+    <p>Sube una grabación de pantalla, capturas o un archivo HTML (exportado de WhatsApp, reporte web). La herramienta extrae los cuadros donde cambia la pantalla, identifica los indicadores financieros y entrega diagnóstico, plan de acción y rutina de seguimiento.</p>
+  </header>
+
+  <div class="grid">
+    <section class="panel" aria-label="Entrada">
+      <div class="label">1 · Archivos</div>
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="Seleccionar archivos">
+        <strong>Arrastra o toca para subir</strong>
+        <small>Video (.mp4, .mov, .webm) · Imágenes · .html / .htm · .txt / .csv</small>
+      </div>
+      <input type="file" id="file" multiple accept="video/*,image/*,.html,.htm,.txt,.csv,text/html,text/plain" hidden>
+      <ul class="files" id="files"></ul>
+      <div class="thumbs" id="thumbs" hidden></div>
+
+      <div class="label">2 · Contexto</div>
+      <label class="f" for="negocio">Negocio
+        <select id="negocio">
+          <option>Gimnasio / sede fitness</option>
+          <option>Labour hire (staffing)</option>
+          <option>Marca deportiva / e-commerce</option>
+          <option>Finanzas personales</option>
+          <option>Otro</option>
+        </select>
+      </label>
+      <label class="f" for="periodo">Periodo que muestran los datos
+        <input type="text" id="periodo" placeholder="Ej: octubre 2026 vs septiembre 2026">
+      </label>
+      <label class="f" for="nota">Qué quieres saber (opcional)
+        <textarea id="nota" placeholder="Ej: por qué bajó el margen, si la sede llega a la meta del trimestre"></textarea>
+      </label>
+
+      <div class="row">
+        <button class="btn" id="go" type="button">Analizar</button>
+        <button class="btn ghost" id="stop" type="button" hidden>Detener</button>
+      </div>
+      <div class="status" id="status" role="status"></div>
+    </section>
+
+    <section class="panel report" id="report" aria-label="Informe" aria-live="polite"></section>
+  </div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const state = { items: [], frames: [], texts: [], ctl: null, last: null };
+let sample = null, downloads = null, maxImages = 20;
+
+const EXAMPLE = {
+  _ejemplo: true,
+  resumen: "Sede con ingresos estables pero margen operativo en caída por nómina y baja retención. El flujo de caja aguanta 1,8 meses de gastos fijos.",
+  estado_general: "atencion",
+  fuentes: ["Grabación de 42 s del tablero mensual (6 cuadros distintos)"],
+  indicadores: [
+    {nombre:"Ingresos operacionales", valor:"$412 M COP", periodo:"oct 2026", referencia:"Meta $430 M", estado:"atencion", lectura:"4,2 % bajo meta; 2 % arriba del mes anterior."},
+    {nombre:"Margen EBITDA", valor:"14,8 %", periodo:"oct 2026", referencia:"Objetivo ≥ 20 %", estado:"critico", lectura:"Cayó 3,1 pp en 3 meses."},
+    {nombre:"Nómina / ingresos", valor:"41 %", periodo:"oct 2026", referencia:"≤ 35 %", estado:"critico", lectura:"Horas extra de entrenadores explican 4 pp."},
+    {nombre:"Churn mensual", valor:"7,9 %", periodo:"oct 2026", referencia:"≤ 5 %", estado:"critico", lectura:"Se concentra en afiliados de 0-90 días."},
+    {nombre:"Afiliados activos", valor:"3.180", periodo:"oct 2026", referencia:"3.300", estado:"atencion", lectura:"Altas cubren las bajas, sin crecimiento neto."},
+    {nombre:"Caja / gasto fijo", valor:"1,8 meses", periodo:"oct 2026", referencia:"≥ 3 meses", estado:"atencion", lectura:"Sin margen para invertir en equipos."}
+  ],
+  hallazgos: ["El problema no es venta: es retención en los primeros 90 días y costo de nómina.", "Cada punto de churn equivale a ~32 afiliados/mes."],
+  prioridad: {accion:"Programa de onboarding de 90 días con 3 contactos obligatorios por afiliado nuevo", porque:"Bajar churn de 7,9 % a 5 % recupera ~92 afiliados/mes, más que cualquier campaña de captación."},
+  plan: [
+    {accion:"Onboarding 90 días (día 3, 21, 60)", responsable:"Coordinador comercial", plazo:"2 semanas", kpi_objetivo:"Churn 0-90 días < 10 %", prioridad:"alta"},
+    {accion:"Tope de horas extra y reasignación de turnos valle", responsable:"Gerente de sede", plazo:"30 días", kpi_objetivo:"Nómina ≤ 37 %", prioridad:"alta"},
+    {accion:"Cobro recurrente automático para planes mensuales", responsable:"Finanzas", plazo:"45 días", kpi_objetivo:"Recaudo > 95 %", prioridad:"media"}
+  ],
+  como_trabajar: {
+    cadencia: [
+      {frecuencia:"Diario", que_revisar:"Altas, bajas y asistencia por franja"},
+      {frecuencia:"Semanal", que_revisar:"Churn por cohorte y horas extra"},
+      {frecuencia:"Mensual", que_revisar:"Estado de resultados, margen EBITDA, caja"}
+    ],
+    reglas: ["Un dueño por indicador.", "Si un KPI está en rojo 2 semanas seguidas, se escala con plan escrito."]
+  },
+  datos_faltantes: ["Costo de adquisición por afiliado", "Ingresos por línea (membresía vs servicios)"]
+};
+
+/* ---------- files ---------- */
+const drop = $('#drop'), fileInput = $('#file');
+drop.addEventListener('click', () => fileInput.click());
+drop.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); } });
+['dragenter','dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave','drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => addFiles(e.dataTransfer.files));
+fileInput.addEventListener('change', () => { addFiles(fileInput.files); fileInput.value = ''; });
+
+function kind(f) {
+  const n = f.name.toLowerCase();
+  if (f.type.startsWith('video/') || /\.(mp4|mov|webm|m4v|mkv)$/.test(n)) return 'video';
+  if (f.type.startsWith('image/')) return 'imagen';
+  if (/\.html?$/.test(n) || f.type === 'text/html') return 'html';
+  if (/\.(txt|csv)$/.test(n) || f.type.startsWith('text/')) return 'texto';
+  return null;
+}
+function addFiles(list) {
+  for (const f of list) { const k = kind(f); if (k) state.items.push({ file: f, kind: k }); else setStatus(`No reconozco el formato de ${f.name}.`, true); }
+  renderFiles();
+}
+function renderFiles() {
+  const ul = $('#files'); ul.replaceChildren();
+  state.items.forEach((it, i) => {
+    const li = document.createElement('li');
+    const t = document.createElement('span'); t.className = 'tag'; t.textContent = it.kind;
+    const n = document.createElement('span'); n.className = 'n'; n.textContent = it.file.name;
+    const x = document.createElement('button'); x.type = 'button'; x.textContent = '×'; x.setAttribute('aria-label', 'Quitar ' + it.file.name);
+    x.onclick = () => { state.items.splice(i, 1); renderFiles(); };
+    li.append(t, n, x); ul.append(li);
+  });
+}
+
+/* ---------- video → frames ---------- */
+function once(el, ev) { return new Promise((res, rej) => { el.addEventListener(ev, res, { once: true }); el.addEventListener('error', () => rej(new Error('video')), { once: true }); }); }
+async function videoFrames(file, budget) {
+  const v = document.createElement('video');
+  v.muted = true; v.playsInline = true; v.preload = 'auto';
+  v.src = URL.createObjectURL(file);
+  await once(v, 'loadedmetadata');
+  let dur = v.duration;
+  if (!isFinite(dur)) { v.currentTime = 1e7; await once(v, 'seeked'); dur = v.duration; v.currentTime = 0; await once(v, 'seeked'); }
+  if (!isFinite(dur) || dur <= 0) dur = 1;
+  const steps = Math.min(120, Math.max(8, Math.round(dur * 2))); // ~2 muestras/seg
+  const W = Math.min(1600, v.videoWidth || 1280), H = Math.round(W * (v.videoHeight || 720) / (v.videoWidth || 1280));
+  const c = document.createElement('canvas'); c.width = W; c.height = H; const ctx = c.getContext('2d');
+  const s = document.createElement('canvas'); s.width = 48; s.height = 27; const sx = s.getContext('2d', { willReadFrequently: true });
+  let prev = null; const kept = [];
+  for (let i = 0; i < steps; i++) {
+    if (state.ctl?.signal.aborted) break;
+    v.currentTime = Math.min(dur - 0.05, (i + 0.5) * dur / steps);
+    await once(v, 'seeked');
+    sx.drawImage(v, 0, 0, 48, 27);
+    const px = sx.getImageData(0, 0, 48, 27).data;
+    let diff = Infinity;
+    if (prev) { diff = 0; for (let p = 0; p < px.length; p += 4) diff += Math.abs(px[p] - prev[p]) + Math.abs(px[p+1] - prev[p+1]) + Math.abs(px[p+2] - prev[p+2]); diff /= (px.length / 4) * 3; }
+    if (diff > 6) { // pantalla cambió (scroll, nueva vista)
+      ctx.drawImage(v, 0, 0, W, H);
+      kept.push({ t: v.currentTime, blob: await new Promise(r => c.toBlob(r, 'image/jpeg', 0.85)) });
+      prev = px;
+    }
+    setStatus(`Leyendo ${file.name}: ${Math.round((i + 1) / steps * 100)} % · ${kept.length} pantallas distintas`);
+  }
+  URL.revokeObjectURL(v.src);
+  return pickEven(kept, budget);
+}
+function pickEven(arr, n) {
+  if (arr.length <= n) return arr;
+  const out = []; for (let i = 0; i < n; i++) out.push(arr[Math.round(i * (arr.length - 1) / (n - 1))]); return out;
+}
+
+/* ---------- html / text ---------- */
+async function htmlText(file) {
+  const raw = await file.text();
+  const doc = new DOMParser().parseFromString(raw, 'text/html');
+  doc.querySelectorAll('script,style,noscript,svg').forEach(e => e.remove());
+  const tables = [...doc.querySelectorAll('table')].map((t, i) =>
+    `[Tabla ${i + 1}]\n` + [...t.rows].map(r => [...r.cells].map(c => c.textContent.trim().replace(/\s+/g, ' ')).join(' | ')).join('\n'));
+  doc.querySelectorAll('table').forEach(t => t.remove());
+  const body = (doc.body?.innerText || doc.body?.textContent || '').replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+  const title = doc.title ? `Título: ${doc.title}\n` : '';
+  return (title + tables.join('\n\n') + (tables.length ? '\n\n' : '') + body).slice(0, 80000);
+}
+
+/* ---------- analysis ---------- */
+function buildPrompt(srcDesc, texts) {
+  return `Eres analista financiero senior. Analiza los indicadores financieros y de negocio que aparecen en el material adjunto.
+Negocio: ${$('#negocio').value}
+Periodo indicado por el usuario: ${$('#periodo').value || 'no indicado; dedúcelo del material'}
+Pregunta del usuario: ${$('#nota').value || 'diagnóstico general'}
+
+Material:
+${srcDesc}
+${texts.map(t => `\n--- Contenido de ${t.name} ---\n${t.text}`).join('\n')}
+
+Reglas:
+- Usa SOLO cifras que aparezcan en el material. Si calculas una (variación, ratio), dilo en "lectura". No inventes valores.
+- Si una imagen es ilegible o un dato no aparece, anótalo en "datos_faltantes".
+- Para "referencia" usa la meta que muestre el material; si no hay, un benchmark razonable del sector en Colombia/Australia según el negocio, marcado como "benchmark".
+- Datos concretos, frases cortas, en español, sin adjetivos de marketing.
+- "prioridad" es UNA sola acción: la de mayor impacto después de analizar todo.
+- Plan: 3 a 6 acciones ordenadas por impacto, con responsable por rol, plazo y KPI objetivo numérico.
+
+Responde SOLO con un objeto JSON con esta forma exacta:
+{"resumen":"2-3 frases","estado_general":"bueno|atencion|critico","fuentes":["qué se identificó en cada archivo"],"indicadores":[{"nombre":"","valor":"","periodo":"","referencia":"","estado":"bueno|atencion|critico","lectura":"1 frase"}],"hallazgos":[""],"prioridad":{"accion":"","porque":""},"plan":[{"accion":"","responsable":"","plazo":"","kpi_objetivo":"","prioridad":"alta|media|baja"}],"como_trabajar":{"cadencia":[{"frecuencia":"","que_revisar":""}],"reglas":[""]},"datos_faltantes":[""]}`;
+}
+
+$('#go').onclick = async () => {
+  if (!sample) { setStatus('El análisis con Claude no está disponible en esta vista. Abre la página dentro de claude.ai con tu sesión iniciada.', true); return; }
+  if (!state.items.length) { setStatus('Sube al menos un archivo.', true); return; }
+  state.ctl = new AbortController();
+  $('#go').disabled = true; $('#stop').hidden = false; $('#report').classList.add('busy');
+  try {
+    const images = [], texts = [], desc = [];
+    const videos = state.items.filter(i => i.kind === 'video'), imgs = state.items.filter(i => i.kind === 'imagen');
+    let budget = Math.max(0, maxImages - imgs.length);
+    const thumbs = $('#thumbs'); thumbs.replaceChildren();
+    for (const it of state.items) {
+      if (state.ctl.signal.aborted) throw { code: 'cancelled' };
+      if (it.kind === 'video') {
+        const share = Math.max(2, Math.floor(budget / videos.length));
+        const fr = await videoFrames(it.file, share);
+        fr.forEach(f => images.push(f.blob));
+        desc.push(`- Video ${it.file.name}: ${fr.length} cuadros en los segundos ${fr.map(f => f.t.toFixed(1)).join(', ')} (imágenes adjuntas, en orden).`);
+      } else if (it.kind === 'imagen') {
+        images.push(it.file); desc.push(`- Imagen ${it.file.name} (adjunta).`);
+      } else {
+        const text = it.kind === 'html' ? await htmlText(it.file) : (await it.file.text()).slice(0, 80000);
+        texts.push({ name: it.file.name, text }); desc.push(`- Archivo ${it.kind} ${it.file.name}: texto extraído abajo.`);
+      }
+    }
+    const send = images.slice(0, maxImages);
+    send.forEach(b => { const im = document.createElement('img'); im.src = URL.createObjectURL(b); im.alt = ''; thumbs.append(im); });
+    thumbs.hidden = !send.length;
+    setStatus(`Enviando ${send.length} imágenes${texts.length ? ' y ' + texts.length + ' textos' : ''} a Claude. Puede tardar 30-90 s…`);
+    const opts = { signal: state.ctl.signal, modelTier: 'complex' };
+    if (send.length) opts.images = send;
+    const data = await sample.json(buildPrompt(desc.join('\n'), texts), opts);
+    if (!data || !Array.isArray(data.indicadores)) throw { code: 'invalid_json' };
+    state.last = data; render(data); setStatus('Análisis listo.');
+  } catch (e) {
+    const msg = {
+      cancelled: 'Análisis detenido.', not_granted: 'No se dio permiso para usar Claude en esta página.',
+      rate_limited: 'Límite de uso alcanzado. Intenta en unos minutos.', images_unavailable: 'Esta vista no permite enviar imágenes; prueba con el archivo HTML o texto.',
+      image_rejected: 'Una imagen fue rechazada (formato o tamaño). Prueba con otra.', prompt_too_large: 'El material es demasiado grande. Sube menos archivos o un video más corto.',
+      invalid_json: 'La respuesta no llegó completa. Pulsa Analizar de nuevo.', refused: 'Claude no procesó este material. Revisa el contenido.',
+    }[e?.code] || 'Error al leer los archivos o al conectar. Intenta de nuevo.';
+    setStatus(msg, e?.code !== 'cancelled');
+  } finally {
+    $('#go').disabled = false; $('#stop').hidden = true; $('#report').classList.remove('busy');
+  }
+};
+$('#stop').onclick = () => state.ctl?.abort();
+
+function setStatus(t, err) { const s = $('#status'); s.textContent = t; s.classList.toggle('err', !!err); }
+
+/* ---------- render ---------- */
+const ST = { bueno: 'Bien', atencion: 'Atención', critico: 'Crítico' };
+const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z]/g, '');
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function list(items) { const ul = el('ul', 'plain'); (items || []).filter(Boolean).forEach(t => ul.append(el('li', null, t))); return ul; }
+function table(head, rows) {
+  const box = el('div', 'tablebox'), t = el('table'), tr = el('tr');
+  head.forEach(h => tr.append(el('th', null, h))); const th = el('thead'); th.append(tr); t.append(th);
+  const tb = el('tbody'); rows.forEach(r => tb.append(r)); t.append(tb); box.append(t); return box;
+}
+function render(d) {
+  const R = $('#report'); R.replaceChildren();
+  if (d._ejemplo) R.append(el('span', 'example', 'Ejemplo: así se ve un informe. Sube tus archivos para generar el tuyo.'));
+  const g = norm(d.estado_general);
+  const v = el('div', 'verdict'); v.append(el('span', 'pill s-' + g, ST[g] || d.estado_general));
+  const vt = el('div'); vt.append(el('h2', null, 'Diagnóstico')); const p = el('p', null, d.resumen); p.style.margin = '4px 0 0'; vt.append(p); v.append(vt); R.append(v);
+  if (d.fuentes?.length) R.append(el('div', 'src', 'Fuente: ' + d.fuentes.join(' · ')));
+
+  if (d.prioridad?.accion) {
+    const pr = el('div', 'priority'); pr.append(el('div', 'label', 'Acción prioritaria'), el('p', 'a', d.prioridad.accion), el('p', 'src', d.prioridad.porque)); R.append(pr);
+  }
+
+  R.append(el('h3', null, 'Indicadores identificados'));
+  R.append(table(['Indicador', 'Valor', 'Referencia', 'Estado', 'Lectura'], d.indicadores.map(i => {
+    const s = norm(i.estado), tr = el('tr');
+    const n = el('td', 'st ' + s); n.append(el('div', null, i.nombre)); if (i.periodo) { const pp = el('div', 'src', i.periodo); n.append(pp); }
+    const st = el('td'); st.append(el('span', 'pill s-' + s, ST[s] || i.estado));
+    tr.append(n, el('td', 'num', i.valor), el('td', 'num', i.referencia), st, el('td', null, i.lectura)); return tr;
+  })));
+
+  if (d.hallazgos?.length) { R.append(el('h3', null, 'Hallazgos')); R.append(list(d.hallazgos)); }
+
+  if (d.plan?.length) {
+    R.append(el('h3', null, 'Plan de acción'));
+    R.append(table(['Acción', 'Responsable', 'Plazo', 'KPI objetivo', 'Prioridad'], d.plan.map(a => {
+      const tr = el('tr'); tr.append(el('td', null, a.accion), el('td', null, a.responsable), el('td', null, a.plazo), el('td', 'num', a.kpi_objetivo));
+      const pr = el('td'); pr.append(el('span', 'prio ' + norm(a.prioridad), a.prioridad)); tr.append(pr); return tr;
+    })));
+  }
+
+  const how = el('div', 'how'); how.append(el('h3', null, 'Cómo trabajar estos indicadores'));
+  const two = el('div', 'two');
+  const c1 = el('div'); c1.append(el('div', 'label', 'Cadencia de revisión'));
+  c1.append(list((d.como_trabajar?.cadencia || []).map(c => `${c.frecuencia}: ${c.que_revisar}`)));
+  const c2 = el('div'); c2.append(el('div', 'label', 'Reglas')); c2.append(list(d.como_trabajar?.reglas));
+  two.append(c1, c2); how.append(two); R.append(how);
+
+  if (d.datos_faltantes?.length) { R.append(el('h3', null, 'Datos que faltan para un análisis completo')); R.append(list(d.datos_faltantes)); }
+
+  if (!d._ejemplo && downloads) {
+    const b = el('button', 'btn ghost', 'Descargar informe (.md)'); b.type = 'button'; b.style.justifySelf = 'start';
+    b.onclick = () => downloads.save({ filename: 'analisis-indicadores.md', data: toMd(d) }).catch(() => setStatus('No se pudo descargar.', true));
+    R.append(b);
+  }
+}
+function toMd(d) {
+  const L = [`# Análisis de indicadores`, ``, `**Estado:** ${ST[norm(d.estado_general)] || d.estado_general}`, ``, d.resumen, ``,
+    `## Acción prioritaria`, `${d.prioridad?.accion || ''} — ${d.prioridad?.porque || ''}`, ``, `## Indicadores`,
+    `| Indicador | Valor | Referencia | Estado | Lectura |`, `|---|---|---|---|---|`,
+    ...d.indicadores.map(i => `| ${i.nombre} (${i.periodo || ''}) | ${i.valor} | ${i.referencia} | ${i.estado} | ${i.lectura} |`), ``,
+    `## Hallazgos`, ...(d.hallazgos || []).map(h => `- ${h}`), ``, `## Plan de acción`,
+    `| Acción | Responsable | Plazo | KPI | Prioridad |`, `|---|---|---|---|---|`,
+    ...(d.plan || []).map(a => `| ${a.accion} | ${a.responsable} | ${a.plazo} | ${a.kpi_objetivo} | ${a.prioridad} |`), ``,
+    `## Cómo trabajar`, ...(d.como_trabajar?.cadencia || []).map(c => `- **${c.frecuencia}:** ${c.que_revisar}`), ...(d.como_trabajar?.reglas || []).map(r => `- ${r}`), ``,
+    `## Datos faltantes`, ...(d.datos_faltantes || []).map(x => `- ${x}`)];
+  return L.join('\n');
+}
+
+render(EXAMPLE);
+
+(async () => {
+  if (!window.claude?.use) { setStatus('Abre esta página en claude.ai para analizar con Claude.', true); return; }
+  try {
+    sample = await claude.use('sample');
+    downloads = await claude.use('downloads');
+    if (!sample) { setStatus('El análisis con Claude no está disponible en esta vista.', true); return; }
+    const lim = await sample.limits().catch(() => null);
+    if (lim?.images?.maxCount) maxImages = lim.images.maxCount;
+    else if (lim) setStatus('Esta vista no envía imágenes: usa archivos HTML o texto.', true);
+  } catch { setStatus('El análisis con Claude no está disponible en esta vista.', true); }
+})();
+</script>
