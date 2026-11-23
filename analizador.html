@@ -3,12 +3,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: banco de trabajo de dos columnas — entrada a la izquierda, informe a la derecha; una columna en móvil */
+/* Layout: banco de trabajo de dos columnas — entrada e historial a la izquierda, informe y proyección a la derecha; una columna en móvil */
 :root{
   --bg:#F3F5F7; --surface:#FFFFFF; --sunk:#E8ECF0; --line:#D3DAE1;
   --fg:#16212B; --muted:#5A6B7A; --accent:#1D5C8C; --accent-ink:#FFFFFF;
   --good:#1F7A4D; --warn:#A86A00; --crit:#B3362B;
-  --good-bg:#E3F2EA; --warn-bg:#FBF0DC; --crit-bg:#F8E3E1;
+  --good-bg:#E3F2EA; --warn-bg:#FBF0DC; --crit-bg:#F8E3E1; --s4:#6B4FA0; --s5:#0E7C86;
   --f-display:"Archivo",system-ui,sans-serif;
   --f-body:"IBM Plex Sans",system-ui,sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
@@ -17,20 +17,21 @@
   --bg:#0F161D; --surface:#17212B; --sunk:#111A22; --line:#2A3846;
   --fg:#E4EAF0; --muted:#93A4B4; --accent:#6CAEE0; --accent-ink:#0B1218;
   --good:#5BC48D; --warn:#E3A93C; --crit:#EE7B70;
-  --good-bg:#16302A; --warn-bg:#33281A; --crit-bg:#3A1F1F; color-scheme:dark}}
+  --good-bg:#16302A; --warn-bg:#33281A; --crit-bg:#3A1F1F; --s4:#B49BE6; --s5:#4FC3CC; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0F161D; --surface:#17212B; --sunk:#111A22; --line:#2A3846;
   --fg:#E4EAF0; --muted:#93A4B4; --accent:#6CAEE0; --accent-ink:#0B1218;
   --good:#5BC48D; --warn:#E3A93C; --crit:#EE7B70;
-  --good-bg:#16302A; --warn-bg:#33281A; --crit-bg:#3A1F1F; color-scheme:dark}
+  --good-bg:#16302A; --warn-bg:#33281A; --crit-bg:#3A1F1F; --s4:#B49BE6; --s5:#4FC3CC; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.5;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 48px}
 .wrap{max-width:1180px;margin:0 auto;display:grid;gap:20px}
 header h1{font-family:var(--f-display);font-weight:800;font-size:clamp(26px,4vw,34px);letter-spacing:-.01em;margin:0;text-wrap:balance}
-header p{margin:4px 0 0;color:var(--muted);max-width:68ch}
-.grid{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:20px;align-items:start}
-@media (max-width:860px){.grid{grid-template-columns:1fr}}
+header p{margin:4px 0 0;color:var(--muted);max-width:72ch}
+.grid{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:880px){.grid{grid-template-columns:1fr}}
+.col{display:grid;gap:20px;min-width:0}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;display:grid;gap:14px;min-width:0}
 .label{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
 .drop{border:1.5px dashed var(--line);border-radius:8px;padding:18px;text-align:center;background:var(--sunk);cursor:pointer;display:grid;gap:4px}
@@ -44,29 +45,39 @@ header p{margin:4px 0 0;color:var(--muted);max-width:68ch}
 .files button{background:none;border:0;color:var(--muted);cursor:pointer;font-size:16px;line-height:1}
 .thumbs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
 .thumbs img{height:54px;border-radius:4px;border:1px solid var(--line);flex:none}
-label.f{display:grid;gap:4px;font-size:13px;font-weight:500}
-select,input[type=text],textarea{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%}
-textarea{min-height:70px;resize:vertical}
+label.f{display:grid;gap:4px;font-size:13px;font-weight:500;min-width:0}
+select,input[type=text],input[type=number],textarea{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%;min-width:0}
+input[type=number]{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+textarea{min-height:64px;resize:vertical}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.row{display:flex;gap:10px;flex-wrap:wrap}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .btn{font:inherit;font-weight:600;border-radius:6px;padding:10px 16px;cursor:pointer;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink)}
 .btn.ghost{background:transparent;color:var(--accent)}
+.btn.sm{padding:6px 10px;font-size:13px}
 .btn:disabled{opacity:.5;cursor:default}
 .status{font-size:13px;color:var(--muted);min-height:1.2em}
 .status.err{color:var(--crit)}
+.hist{display:grid;gap:4px;list-style:none;margin:0;padding:0}
+.hist button{all:unset;cursor:pointer;display:flex;justify-content:space-between;gap:8px;width:100%;box-sizing:border-box;padding:7px 9px;border-radius:6px;font-size:13.5px}
+.hist button:hover{background:var(--sunk)}
+.hist button.on{background:var(--sunk);font-weight:600}
+.hist button:focus-visible{outline:2px solid var(--accent)}
+.hist .m{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.empty{font-size:13px;color:var(--muted)}
 .report{display:grid;gap:18px;min-width:0}
 .example{font-size:12px;font-weight:600;color:var(--warn);background:var(--warn-bg);border-radius:4px;padding:2px 8px;justify-self:start}
 .verdict{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
 .pill{font-family:var(--f-mono);font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;padding:4px 10px;border-radius:999px;white-space:nowrap}
 .s-bueno{color:var(--good);background:var(--good-bg)} .s-atencion{color:var(--warn);background:var(--warn-bg)} .s-critico{color:var(--crit);background:var(--crit-bg)}
-h2{font-family:var(--f-display);font-weight:700;font-size:19px;margin:0}
+h2{font-family:var(--f-display);font-weight:700;font-size:19px;margin:0;text-wrap:balance}
 h3{font-family:var(--f-display);font-weight:700;font-size:15px;margin:0}
 .tablebox{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
 table{border-collapse:collapse;width:100%;font-size:13.5px}
 th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
-th{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:var(--sunk);font-weight:600}
+th{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:var(--sunk);font-weight:600;white-space:nowrap}
 tr:last-child td{border-bottom:0}
-td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+td.num,th.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+th.num,td.r{text-align:right}
 td.st{border-left:3px solid transparent}
 td.st.bueno{border-left-color:var(--good)} td.st.atencion{border-left-color:var(--warn)} td.st.critico{border-left-color:var(--crit)}
 .priority{border:1px solid var(--accent);border-radius:8px;padding:14px;display:grid;gap:4px}
@@ -80,92 +91,129 @@ ul.plain{margin:0;padding-left:18px;display:grid;gap:4px}
 .prio.alta{color:var(--crit)} .prio.media{color:var(--warn)} .prio.baja{color:var(--muted)}
 .src{font-size:13px;color:var(--muted)}
 .how{background:var(--sunk);border-radius:8px;padding:14px;display:grid;gap:10px;font-size:14px}
-@media (prefers-reduced-motion:no-preference){.report{transition:opacity .2s}}
 .busy{opacity:.55}
+/* proyección */
+.assump{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+@media (max-width:640px){.assump{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.assump small{font-weight:400;color:var(--muted);font-size:11.5px}
+.read{background:var(--sunk);border-radius:8px;padding:14px;display:grid;gap:6px;font-size:14.5px}
+.read p{margin:0}
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:760px){.charts{grid-template-columns:1fr}}
+.chart{border:1px solid var(--line);border-radius:8px;padding:10px 10px 6px;display:grid;gap:4px;min-width:0}
+.chart svg{width:100%;height:auto;display:block}
+.chart .ax{font-family:var(--f-mono);font-size:10px;fill:var(--muted)}
+.chart .grid-l{stroke:var(--line);stroke-width:1}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.vs{border:1px solid var(--line);border-radius:8px;padding:14px;display:grid;gap:8px}
+.ai{display:grid;grid-template-columns:1fr auto;gap:8px}
+@media (max-width:560px){.ai{grid-template-columns:1fr}}
+.esc{display:grid;gap:12px}
+.esc-card{border:1px solid var(--line);border-top:3px solid var(--line);border-radius:8px;padding:12px;display:grid;gap:10px;background:var(--surface)}
+.esc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.esc-grid label.f{font-size:12px}
+.dev.pos{color:var(--good)} .dev.neg{color:var(--crit)}
 </style>
 
 <div class="wrap">
   <header>
     <h1>Lector de Indicadores</h1>
-    <p>Sube una grabación de pantalla, capturas o un archivo HTML (exportado de WhatsApp, reporte web). La herramienta extrae los cuadros donde cambia la pantalla, identifica los indicadores financieros y entrega diagnóstico, plan de acción y rutina de seguimiento.</p>
+    <p>Sube el informe del mes (grabación de pantalla, capturas o HTML). La herramienta identifica los indicadores, entrega diagnóstico y plan, guarda el mes en el historial de la sede y proyecta afiliados, ingresos y EBITDA con escenarios de hipótesis económicas: inflación, nómina, dólar, precios y demanda.</p>
   </header>
 
   <div class="grid">
-    <section class="panel" aria-label="Entrada">
-      <div class="label">1 · Archivos</div>
-      <div class="drop" id="drop" tabindex="0" role="button" aria-label="Seleccionar archivos">
-        <strong>Arrastra o toca para subir</strong>
-        <small>Video (.mp4, .mov, .webm) · Imágenes · .html / .htm · .txt / .csv</small>
-      </div>
-      <input type="file" id="file" multiple accept="video/*,image/*,.html,.htm,.txt,.csv,text/html,text/plain" hidden>
-      <ul class="files" id="files"></ul>
-      <div class="thumbs" id="thumbs" hidden></div>
+    <div class="col">
+      <section class="panel" aria-label="Entrada">
+        <div class="label">1 · Archivos del mes</div>
+        <div class="drop" id="drop" tabindex="0" role="button" aria-label="Seleccionar archivos">
+          <strong>Arrastra o toca para subir</strong>
+          <small>Video (.mp4, .mov, .webm) · Imágenes · .html / .htm · .txt / .csv</small>
+        </div>
+        <input type="file" id="file" multiple accept="video/*,image/*,.html,.htm,.txt,.csv,text/html,text/plain" hidden>
+        <ul class="files" id="files"></ul>
+        <div class="thumbs" id="thumbs" hidden></div>
 
-      <div class="label">2 · Contexto</div>
-      <label class="f" for="negocio">Negocio
-        <select id="negocio">
-          <option>Gimnasio / sede fitness</option>
-          <option>Labour hire (staffing)</option>
-          <option>Marca deportiva / e-commerce</option>
-          <option>Finanzas personales</option>
-          <option>Otro</option>
-        </select>
-      </label>
-      <label class="f" for="periodo">Periodo que muestran los datos
-        <input type="text" id="periodo" placeholder="Ej: octubre 2026 vs septiembre 2026">
-      </label>
-      <label class="f" for="nota">Qué quieres saber (opcional)
-        <textarea id="nota" placeholder="Ej: por qué bajó el margen, si la sede llega a la meta del trimestre"></textarea>
-      </label>
+        <div class="label">2 · Contexto</div>
+        <label class="f" for="sede">Sede o unidad
+          <input type="text" id="sede" placeholder="Ej: Calle 90 (si lo dejas vacío, se toma del informe)">
+        </label>
+        <label class="f" for="negocio">Negocio
+          <select id="negocio">
+            <option>Gimnasio / sede fitness</option>
+            <option>Labour hire (staffing)</option>
+            <option>Marca deportiva / e-commerce</option>
+            <option>Finanzas personales</option>
+            <option>Otro</option>
+          </select>
+        </label>
+        <label class="f" for="periodo">Mes del informe
+          <input type="text" id="periodo" placeholder="Ej: noviembre 2026">
+        </label>
+        <label class="f" for="nota">Qué quieres saber (opcional)
+          <textarea id="nota" placeholder="Ej: si llegamos a la meta de afiliados de diciembre"></textarea>
+        </label>
+        <div class="row">
+          <button class="btn" id="go" type="button">Analizar y proyectar</button>
+          <button class="btn ghost" id="stop" type="button" hidden>Detener</button>
+        </div>
+        <div class="status" id="status" role="status"></div>
+      </section>
 
-      <div class="row">
-        <button class="btn" id="go" type="button">Analizar</button>
-        <button class="btn ghost" id="stop" type="button" hidden>Detener</button>
-      </div>
-      <div class="status" id="status" role="status"></div>
-    </section>
+      <section class="panel" aria-label="Historial">
+        <div class="label">Meses guardados</div>
+        <ul class="hist" id="hist"></ul>
+        <p class="empty" id="histEmpty">Cada análisis se guarda aquí por sede y mes. Con dos meses o más de una misma sede, la proyección usa el promedio real y compara lo proyectado contra lo que pasó.</p>
+      </section>
+    </div>
 
-    <section class="panel report" id="report" aria-label="Informe" aria-live="polite"></section>
+    <div class="col">
+      <section class="panel" id="projPanel" aria-label="Proyección"></section>
+      <section class="panel report" id="report" aria-label="Informe" aria-live="polite"></section>
+    </div>
   </div>
 </div>
 
 <script>
 const $ = s => document.querySelector(s);
-const state = { items: [], frames: [], texts: [], ctl: null, last: null };
-let sample = null, downloads = null, maxImages = 20;
+const state = { items: [], ctl: null, docs: [], escDocs: [], current: null, sup: null, esc: [], det: 0 };
+let sample = null, downloads = null, db = null, maxImages = 20;
 
+/* ---------- formato ---------- */
+const MES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const num = (n, d = 0) => (n == null || !isFinite(n)) ? '—' : Number(n).toLocaleString('es-CO', { minimumFractionDigits: d, maximumFractionDigits: d });
+const mn = n => (n == null || !isFinite(n)) ? '—' : (n < 0 ? '−$' : '$') + num(Math.abs(n)) + ' Mn';
+const pct = (n, d = 2) => (n == null || !isFinite(n)) ? '—' : num(n, d) + ' %';
+function addMonth(ym, k) { const [y, m] = ym.split('-').map(Number); const t = y * 12 + (m - 1) + k; return `${Math.floor(t / 12)}-${String(t % 12 + 1).padStart(2, '0')}`; }
+function mesLabel(ym) { if (!/^\d{4}-\d{2}$/.test(ym || '')) return ym || '—'; const [y, m] = ym.split('-'); return `${MES[+m - 1]} ${y.slice(2)}`; }
+const slug = s => String(s || 'sede').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'sede';
+const isNum = v => typeof v === 'number' && isFinite(v);
+const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z]/g, '');
+
+/* ---------- ejemplo ---------- */
 const EXAMPLE = {
-  _ejemplo: true,
-  resumen: "Sede con ingresos estables pero margen operativo en caída por nómina y baja retención. El flujo de caja aguanta 1,8 meses de gastos fijos.",
-  estado_general: "atencion",
-  fuentes: ["Grabación de 42 s del tablero mensual (6 cuadros distintos)"],
-  indicadores: [
-    {nombre:"Ingresos operacionales", valor:"$412 M COP", periodo:"oct 2026", referencia:"Meta $430 M", estado:"atencion", lectura:"4,2 % bajo meta; 2 % arriba del mes anterior."},
-    {nombre:"Margen EBITDA", valor:"14,8 %", periodo:"oct 2026", referencia:"Objetivo ≥ 20 %", estado:"critico", lectura:"Cayó 3,1 pp en 3 meses."},
-    {nombre:"Nómina / ingresos", valor:"41 %", periodo:"oct 2026", referencia:"≤ 35 %", estado:"critico", lectura:"Horas extra de entrenadores explican 4 pp."},
-    {nombre:"Churn mensual", valor:"7,9 %", periodo:"oct 2026", referencia:"≤ 5 %", estado:"critico", lectura:"Se concentra en afiliados de 0-90 días."},
-    {nombre:"Afiliados activos", valor:"3.180", periodo:"oct 2026", referencia:"3.300", estado:"atencion", lectura:"Altas cubren las bajas, sin crecimiento neto."},
-    {nombre:"Caja / gasto fijo", valor:"1,8 meses", periodo:"oct 2026", referencia:"≥ 3 meses", estado:"atencion", lectura:"Sin margen para invertir en equipos."}
-  ],
-  hallazgos: ["El problema no es venta: es retención en los primeros 90 días y costo de nómina.", "Cada punto de churn equivale a ~32 afiliados/mes."],
-  prioridad: {accion:"Programa de onboarding de 90 días con 3 contactos obligatorios por afiliado nuevo", porque:"Bajar churn de 7,9 % a 5 % recupera ~92 afiliados/mes, más que cualquier campaña de captación."},
-  plan: [
-    {accion:"Onboarding 90 días (día 3, 21, 60)", responsable:"Coordinador comercial", plazo:"2 semanas", kpi_objetivo:"Churn 0-90 días < 10 %", prioridad:"alta"},
-    {accion:"Tope de horas extra y reasignación de turnos valle", responsable:"Gerente de sede", plazo:"30 días", kpi_objetivo:"Nómina ≤ 37 %", prioridad:"alta"},
-    {accion:"Cobro recurrente automático para planes mensuales", responsable:"Finanzas", plazo:"45 días", kpi_objetivo:"Recaudo > 95 %", prioridad:"media"}
-  ],
-  como_trabajar: {
-    cadencia: [
-      {frecuencia:"Diario", que_revisar:"Altas, bajas y asistencia por franja"},
-      {frecuencia:"Semanal", que_revisar:"Churn por cohorte y horas extra"},
-      {frecuencia:"Mensual", que_revisar:"Estado de resultados, margen EBITDA, caja"}
+  _ejemplo: true, sede: 'Sede ejemplo', mes: '2026-10',
+  base: { afiliados: 3180, altas: 238, bajas: 251, churn_pct: 7.9, ingresos_mn: 412, arpu: 129560, ebitda_mn: 61, margen_ebitda_ltm_pct: 14.8, trafico: 520, conversion_pct: 38,
+    var_anual: { ingresos_pct: 2.0, afiliados_pct: -3.1, trafico_pct: -6.0 }, tendencia_3m: {}, estacionalidad_siguiente: {} },
+  informe: {
+    resumen: "Sede con ingresos estables pero margen operativo en caída por nómina y baja retención. El flujo de caja aguanta 1,8 meses de gastos fijos.",
+    estado_general: "atencion",
+    fuentes: ["Grabación de 42 s del tablero mensual (6 cuadros distintos)"],
+    indicadores: [
+      {nombre:"Ingresos operacionales", valor:"$412 Mn", periodo:"oct 2026", referencia:"Meta $430 Mn", estado:"atencion", lectura:"4,2 % bajo meta; 2 % arriba del mes anterior."},
+      {nombre:"Margen EBITDA", valor:"14,8 %", periodo:"oct 2026", referencia:"≥ 20 %", estado:"critico", lectura:"Cayó 3,1 pp en 3 meses."},
+      {nombre:"Churn mensual", valor:"7,9 %", periodo:"oct 2026", referencia:"≤ 5 %", estado:"critico", lectura:"Se concentra en afiliados de 0-90 días."},
+      {nombre:"Afiliados activos", valor:"3.180", periodo:"oct 2026", referencia:"3.300", estado:"atencion", lectura:"Las altas no alcanzan a cubrir las bajas."}
     ],
-    reglas: ["Un dueño por indicador.", "Si un KPI está en rojo 2 semanas seguidas, se escala con plan escrito."]
-  },
-  datos_faltantes: ["Costo de adquisición por afiliado", "Ingresos por línea (membresía vs servicios)"]
+    hallazgos: ["El problema no es venta: es retención en los primeros 90 días."],
+    prioridad: {accion:"Programa de onboarding de 90 días con 3 contactos obligatorios por afiliado nuevo", porque:"Bajar churn de 7,9 % a 5 % retiene ~92 afiliados/mes."},
+    plan: [{accion:"Onboarding 90 días (día 3, 21, 60)", responsable:"Coordinador comercial", plazo:"2 semanas", kpi_objetivo:"Churn < 6 %", prioridad:"alta"}],
+    como_trabajar: { cadencia: [{frecuencia:"Semanal", que_revisar:"Churn por cohorte"}], reglas: ["Un dueño por indicador."] },
+    datos_faltantes: []
+  }
 };
 
-/* ---------- files ---------- */
+/* ---------- archivos ---------- */
 const drop = $('#drop'), fileInput = $('#file');
 drop.addEventListener('click', () => fileInput.click());
 drop.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); } });
@@ -173,7 +221,6 @@ drop.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') 
 ['dragleave','drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
 drop.addEventListener('drop', e => addFiles(e.dataTransfer.files));
 fileInput.addEventListener('change', () => { addFiles(fileInput.files); fileInput.value = ''; });
-
 function kind(f) {
   const n = f.name.toLowerCase();
   if (f.type.startsWith('video/') || /\.(mp4|mov|webm|m4v|mkv)$/.test(n)) return 'video';
@@ -190,25 +237,23 @@ function renderFiles() {
   const ul = $('#files'); ul.replaceChildren();
   state.items.forEach((it, i) => {
     const li = document.createElement('li');
-    const t = document.createElement('span'); t.className = 'tag'; t.textContent = it.kind;
-    const n = document.createElement('span'); n.className = 'n'; n.textContent = it.file.name;
-    const x = document.createElement('button'); x.type = 'button'; x.textContent = '×'; x.setAttribute('aria-label', 'Quitar ' + it.file.name);
+    const t = el('span', 'tag', it.kind), n = el('span', 'n', it.file.name);
+    const x = el('button', null, '×'); x.type = 'button'; x.setAttribute('aria-label', 'Quitar ' + it.file.name);
     x.onclick = () => { state.items.splice(i, 1); renderFiles(); };
     li.append(t, n, x); ul.append(li);
   });
 }
 
-/* ---------- video → frames ---------- */
-function once(el, ev) { return new Promise((res, rej) => { el.addEventListener(ev, res, { once: true }); el.addEventListener('error', () => rej(new Error('video')), { once: true }); }); }
+/* ---------- video → cuadros ---------- */
+function once(v, ev) { return new Promise((res, rej) => { v.addEventListener(ev, res, { once: true }); v.addEventListener('error', () => rej(new Error('video')), { once: true }); }); }
 async function videoFrames(file, budget) {
   const v = document.createElement('video');
-  v.muted = true; v.playsInline = true; v.preload = 'auto';
-  v.src = URL.createObjectURL(file);
+  v.muted = true; v.playsInline = true; v.preload = 'auto'; v.src = URL.createObjectURL(file);
   await once(v, 'loadedmetadata');
   let dur = v.duration;
   if (!isFinite(dur)) { v.currentTime = 1e7; await once(v, 'seeked'); dur = v.duration; v.currentTime = 0; await once(v, 'seeked'); }
   if (!isFinite(dur) || dur <= 0) dur = 1;
-  const steps = Math.min(120, Math.max(8, Math.round(dur * 2))); // ~2 muestras/seg
+  const steps = Math.min(120, Math.max(8, Math.round(dur * 2)));
   const W = Math.min(1600, v.videoWidth || 1280), H = Math.round(W * (v.videoHeight || 720) / (v.videoWidth || 1280));
   const c = document.createElement('canvas'); c.width = W; c.height = H; const ctx = c.getContext('2d');
   const s = document.createElement('canvas'); s.width = 48; s.height = 27; const sx = s.getContext('2d', { willReadFrequently: true });
@@ -221,57 +266,58 @@ async function videoFrames(file, budget) {
     const px = sx.getImageData(0, 0, 48, 27).data;
     let diff = Infinity;
     if (prev) { diff = 0; for (let p = 0; p < px.length; p += 4) diff += Math.abs(px[p] - prev[p]) + Math.abs(px[p+1] - prev[p+1]) + Math.abs(px[p+2] - prev[p+2]); diff /= (px.length / 4) * 3; }
-    if (diff > 6) { // pantalla cambió (scroll, nueva vista)
-      ctx.drawImage(v, 0, 0, W, H);
-      kept.push({ t: v.currentTime, blob: await new Promise(r => c.toBlob(r, 'image/jpeg', 0.85)) });
-      prev = px;
-    }
+    if (diff > 6) { ctx.drawImage(v, 0, 0, W, H); kept.push({ t: v.currentTime, blob: await new Promise(r => c.toBlob(r, 'image/jpeg', 0.85)) }); prev = px; }
     setStatus(`Leyendo ${file.name}: ${Math.round((i + 1) / steps * 100)} % · ${kept.length} pantallas distintas`);
   }
   URL.revokeObjectURL(v.src);
-  return pickEven(kept, budget);
+  if (kept.length <= budget) return kept;
+  const out = []; for (let i = 0; i < budget; i++) out.push(kept[Math.round(i * (kept.length - 1) / Math.max(1, budget - 1))]); return out;
 }
-function pickEven(arr, n) {
-  if (arr.length <= n) return arr;
-  const out = []; for (let i = 0; i < n; i++) out.push(arr[Math.round(i * (arr.length - 1) / (n - 1))]); return out;
-}
-
-/* ---------- html / text ---------- */
 async function htmlText(file) {
-  const raw = await file.text();
-  const doc = new DOMParser().parseFromString(raw, 'text/html');
+  const doc = new DOMParser().parseFromString(await file.text(), 'text/html');
   doc.querySelectorAll('script,style,noscript,svg').forEach(e => e.remove());
-  const tables = [...doc.querySelectorAll('table')].map((t, i) =>
-    `[Tabla ${i + 1}]\n` + [...t.rows].map(r => [...r.cells].map(c => c.textContent.trim().replace(/\s+/g, ' ')).join(' | ')).join('\n'));
+  const tables = [...doc.querySelectorAll('table')].map((t, i) => `[Tabla ${i + 1}]\n` + [...t.rows].map(r => [...r.cells].map(c => c.textContent.trim().replace(/\s+/g, ' ')).join(' | ')).join('\n'));
   doc.querySelectorAll('table').forEach(t => t.remove());
   const body = (doc.body?.innerText || doc.body?.textContent || '').replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
-  const title = doc.title ? `Título: ${doc.title}\n` : '';
-  return (title + tables.join('\n\n') + (tables.length ? '\n\n' : '') + body).slice(0, 80000);
+  return ((doc.title ? `Título: ${doc.title}\n` : '') + tables.join('\n\n') + '\n\n' + body).slice(0, 80000);
 }
 
-/* ---------- analysis ---------- */
+/* ---------- prompt ---------- */
+function historyText(sede) {
+  const h = docsFor(sede).slice(-6);
+  if (!h.length) return 'Sin historial guardado para esta sede.';
+  return h.map(d => { const b = d.base || {}; return `${d.mes}: afiliados ${b.afiliados ?? '—'}, altas ${b.altas ?? '—'}, bajas ${b.bajas ?? '—'}, churn ${b.churn_pct ?? '—'} %, ingresos ${b.ingresos_mn ?? '—'} Mn, EBITDA ${b.ebitda_mn ?? '—'} Mn`; }).join('\n');
+}
 function buildPrompt(srcDesc, texts) {
-  return `Eres analista financiero senior. Analiza los indicadores financieros y de negocio que aparecen en el material adjunto.
+  const sede = $('#sede').value.trim();
+  return `Eres analista financiero senior. Analiza los indicadores financieros y de negocio del material adjunto y extrae las cifras base para una proyección.
 Negocio: ${$('#negocio').value}
-Periodo indicado por el usuario: ${$('#periodo').value || 'no indicado; dedúcelo del material'}
-Pregunta del usuario: ${$('#nota').value || 'diagnóstico general'}
+Sede indicada por el usuario: ${sede || 'no indicada; tómala del material'}
+Mes indicado por el usuario: ${$('#periodo').value || 'no indicado; dedúcelo del material'}
+Pregunta del usuario: ${$('#nota').value || 'diagnóstico general y proyección'}
+
+Historial guardado de meses anteriores de esta sede (úsalo para leer la tendencia):
+${historyText(sede)}
 
 Material:
 ${srcDesc}
 ${texts.map(t => `\n--- Contenido de ${t.name} ---\n${t.text}`).join('\n')}
 
 Reglas:
-- Usa SOLO cifras que aparezcan en el material. Si calculas una (variación, ratio), dilo en "lectura". No inventes valores.
-- Si una imagen es ilegible o un dato no aparece, anótalo en "datos_faltantes".
-- Para "referencia" usa la meta que muestre el material; si no hay, un benchmark razonable del sector en Colombia/Australia según el negocio, marcado como "benchmark".
+- Usa SOLO cifras que aparezcan en el material. Si calculas una, dilo en "lectura". No inventes valores.
+- En "base" pon números puros (sin $, sin %, punto decimal). ingresos_mn, ebitda_mn, costos_mn (costos totales), nomina_mn y costos_usd_mn (costos atados al dólar) en millones de la moneda local; arpu en unidades. Si un dato no aparece, null.
+- "var_anual" = variación contra el mismo mes del año anterior; "tendencia_3m" = últimos 3 meses vs 3 anteriores; "estacionalidad_siguiente" = lo que pasó el año pasado en el mes siguiente contra su mes previo. Solo si el material lo trae; si no, null.
+- "mes" en formato AAAA-MM.
+- Para "referencia" usa la meta del material; si no hay, el referente o grupo de comparación que muestre el material; si no hay ninguno, un benchmark del sector marcado como "benchmark".
 - Datos concretos, frases cortas, en español, sin adjetivos de marketing.
-- "prioridad" es UNA sola acción: la de mayor impacto después de analizar todo.
+- "prioridad" es UNA sola acción: la de mayor impacto.
 - Plan: 3 a 6 acciones ordenadas por impacto, con responsable por rol, plazo y KPI objetivo numérico.
 
 Responde SOLO con un objeto JSON con esta forma exacta:
-{"resumen":"2-3 frases","estado_general":"bueno|atencion|critico","fuentes":["qué se identificó en cada archivo"],"indicadores":[{"nombre":"","valor":"","periodo":"","referencia":"","estado":"bueno|atencion|critico","lectura":"1 frase"}],"hallazgos":[""],"prioridad":{"accion":"","porque":""},"plan":[{"accion":"","responsable":"","plazo":"","kpi_objetivo":"","prioridad":"alta|media|baja"}],"como_trabajar":{"cadencia":[{"frecuencia":"","que_revisar":""}],"reglas":[""]},"datos_faltantes":[""]}`;
+{"sede":"","mes":"AAAA-MM","base":{"afiliados":0,"altas":0,"bajas":0,"churn_pct":0,"ingresos_mn":0,"arpu":0,"ebitda_mn":0,"costos_mn":0,"nomina_mn":0,"costos_usd_mn":0,"margen_ebitda_ltm_pct":0,"trafico":0,"conversion_pct":0,"var_anual":{"ingresos_pct":0,"afiliados_pct":0,"trafico_pct":0},"tendencia_3m":{"ingresos_pct":0,"afiliados_pct":0,"trafico_pct":0,"churn_pts":0},"estacionalidad_siguiente":{"ingresos_pct":0,"afiliados_pct":0,"churn_pts":0}},"informe":{"resumen":"2-3 frases","estado_general":"bueno|atencion|critico","fuentes":[""],"indicadores":[{"nombre":"","valor":"","periodo":"","referencia":"","estado":"bueno|atencion|critico","lectura":"1 frase"}],"hallazgos":[""],"prioridad":{"accion":"","porque":""},"plan":[{"accion":"","responsable":"","plazo":"","kpi_objetivo":"","prioridad":"alta|media|baja"}],"como_trabajar":{"cadencia":[{"frecuencia":"","que_revisar":""}],"reglas":[""]},"datos_faltantes":[""]}}`;
 }
 
+/* ---------- análisis ---------- */
 $('#go').onclick = async () => {
   if (!sample) { setStatus('El análisis con Claude no está disponible en esta vista. Abre la página dentro de claude.ai con tu sesión iniciada.', true); return; }
   if (!state.items.length) { setStatus('Sube al menos un archivo.', true); return; }
@@ -280,31 +326,40 @@ $('#go').onclick = async () => {
   try {
     const images = [], texts = [], desc = [];
     const videos = state.items.filter(i => i.kind === 'video'), imgs = state.items.filter(i => i.kind === 'imagen');
-    let budget = Math.max(0, maxImages - imgs.length);
-    const thumbs = $('#thumbs'); thumbs.replaceChildren();
+    const budget = Math.max(0, maxImages - imgs.length);
     for (const it of state.items) {
       if (state.ctl.signal.aborted) throw { code: 'cancelled' };
       if (it.kind === 'video') {
-        const share = Math.max(2, Math.floor(budget / videos.length));
-        const fr = await videoFrames(it.file, share);
+        const fr = await videoFrames(it.file, Math.max(2, Math.floor(budget / videos.length)));
         fr.forEach(f => images.push(f.blob));
         desc.push(`- Video ${it.file.name}: ${fr.length} cuadros en los segundos ${fr.map(f => f.t.toFixed(1)).join(', ')} (imágenes adjuntas, en orden).`);
-      } else if (it.kind === 'imagen') {
-        images.push(it.file); desc.push(`- Imagen ${it.file.name} (adjunta).`);
-      } else {
+      } else if (it.kind === 'imagen') { images.push(it.file); desc.push(`- Imagen ${it.file.name} (adjunta).`); }
+      else {
         const text = it.kind === 'html' ? await htmlText(it.file) : (await it.file.text()).slice(0, 80000);
         texts.push({ name: it.file.name, text }); desc.push(`- Archivo ${it.kind} ${it.file.name}: texto extraído abajo.`);
       }
     }
     const send = images.slice(0, maxImages);
+    const thumbs = $('#thumbs'); thumbs.replaceChildren();
     send.forEach(b => { const im = document.createElement('img'); im.src = URL.createObjectURL(b); im.alt = ''; thumbs.append(im); });
     thumbs.hidden = !send.length;
     setStatus(`Enviando ${send.length} imágenes${texts.length ? ' y ' + texts.length + ' textos' : ''} a Claude. Puede tardar 30-90 s…`);
     const opts = { signal: state.ctl.signal, modelTier: 'complex' };
     if (send.length) opts.images = send;
     const data = await sample.json(buildPrompt(desc.join('\n'), texts), opts);
-    if (!data || !Array.isArray(data.indicadores)) throw { code: 'invalid_json' };
-    state.last = data; render(data); setStatus('Análisis listo.');
+    if (!data?.informe || !Array.isArray(data.informe.indicadores)) throw { code: 'invalid_json' };
+    const doc = {
+      sede: $('#sede').value.trim() || data.sede || 'Sede',
+      mes: /^\d{4}-\d{2}$/.test(data.mes || '') ? data.mes : new Date().toISOString().slice(0, 7),
+      negocio: $('#negocio').value, base: data.base || {}, informe: data.informe, guardado: new Date().toISOString()
+    };
+    doc.id = slug(doc.sede) + '_' + doc.mes;
+    // proyección del mes siguiente con supuestos por defecto, para comparar cuando llegue el dato real
+    const sup = defaultSup(doc, withDoc(docsFor(doc.sede), doc));
+    if (sup) { const p = run(sup, {}, 1, doc.mes)[0]; doc.proy_siguiente = { mes: addMonth(doc.mes, 1), afiliados: Math.round(p.afiliados), ingresos_mn: p.ingresos, ebitda_mn: p.ebitda }; }
+    await saveDoc(doc);
+    show(doc);
+    setStatus(db ? `Análisis listo y guardado en el historial (${doc.sede} · ${mesLabel(doc.mes)}).` : 'Análisis listo. No se pudo guardar en el historial en esta vista.');
   } catch (e) {
     const msg = {
       cancelled: 'Análisis detenido.', not_granted: 'No se dio permiso para usar Claude en esta página.',
@@ -313,46 +368,367 @@ $('#go').onclick = async () => {
       invalid_json: 'La respuesta no llegó completa. Pulsa Analizar de nuevo.', refused: 'Claude no procesó este material. Revisa el contenido.',
     }[e?.code] || 'Error al leer los archivos o al conectar. Intenta de nuevo.';
     setStatus(msg, e?.code !== 'cancelled');
-  } finally {
-    $('#go').disabled = false; $('#stop').hidden = true; $('#report').classList.remove('busy');
-  }
+  } finally { $('#go').disabled = false; $('#stop').hidden = true; $('#report').classList.remove('busy'); }
 };
 $('#stop').onclick = () => state.ctl?.abort();
-
 function setStatus(t, err) { const s = $('#status'); s.textContent = t; s.classList.toggle('err', !!err); }
 
-/* ---------- render ---------- */
+/* ---------- historial (db) ---------- */
+function docsFor(sede) { const k = slug(sede); return state.docs.filter(d => slug(d.sede) === k).sort((a, b) => a.mes.localeCompare(b.mes)); }
+function withDoc(list, doc) { return [...list.filter(d => d.mes !== doc.mes), doc].sort((a, b) => a.mes.localeCompare(b.mes)); }
+async function saveDoc(doc) {
+  state.docs = [...state.docs.filter(d => d.id !== doc.id), doc];
+  renderHist();
+  if (!db) return;
+  try { const { id, ...data } = doc; await db.collection('meses').doc(id).set(JSON.parse(JSON.stringify(data))); }
+  catch { setStatus('El análisis está listo, pero no se pudo guardar en el historial.', true); }
+}
+function renderHist() {
+  const ul = $('#hist'); ul.replaceChildren();
+  const list = [...state.docs].sort((a, b) => a.sede.localeCompare(b.sede) || b.mes.localeCompare(a.mes));
+  $('#histEmpty').hidden = list.length > 0;
+  list.forEach(d => {
+    const li = document.createElement('li'), b = el('button');
+    b.type = 'button'; if (state.current?.id === d.id) b.classList.add('on');
+    b.append(el('span', null, d.sede), el('span', 'm', mesLabel(d.mes)));
+    b.onclick = () => show(d);
+    li.append(b); ul.append(li);
+  });
+}
+
+/* ---------- modelo de proyección ----------
+   afiliados(t) = afiliados(t−1) × (1 − churn) + altas
+   ingresos(t)  = afiliados(t) × ingreso por afiliado × ajustes de precio × (1 + crec.)^t
+   costos(t)    = costos base × (nómina% × aumentos de nómina + dólar% × TRM + resto × IPC)
+   EBITDA(t)    = ingresos(t) − costos(t)                                                    */
+const LEVERS = [
+  { k: 'churnD', label: 'Churn Δ pts', step: 0.1, group: 'Churn' },
+  { k: 'altasD', label: 'Altas / demanda Δ %', step: 1, group: 'Demanda' },
+  { k: 'precioPct', label: 'Ajuste de precio %', step: 0.5, group: 'Precio' },
+  { k: 'precioMes', label: 'Mes del ajuste', month: true, group: 'Precio' },
+  { k: 'churnPrecio', label: 'Churn extra 3 meses tras ajuste (pts)', step: 0.1, group: 'Precio' },
+  { k: 'ipc', label: 'Inflación anual (otros costos) %', step: 0.1, group: 'Inflación' },
+  { k: 'salario', label: 'Aumento de nómina %', step: 0.1, group: 'Nómina' },
+  { k: 'salarioMes', label: 'Mes del aumento', month: true, group: 'Nómina' },
+  { k: 'trm', label: 'Variación dólar anual %', step: 0.5, group: 'Tipo de cambio' }
+];
+const GROUPS = ['Churn', 'Demanda', 'Precio', 'Inflación', 'Nómina', 'Tipo de cambio'];
+const COLORS = ['var(--crit)', 'var(--good)', 'var(--warn)', 'var(--s4)', 'var(--s5)'];
+const DEFAULT_ESC = () => [
+  { id: 'e1', name: 'Conservador', churnD: 0.5, altasD: -10, precioPct: 0, precioMes: 1, churnPrecio: 0, ipc: 0, salario: 0, salarioMes: 1, trm: 0, porque: 'Más retiros y menos ventas que hoy.' },
+  { id: 'e2', name: 'Con plan', churnD: -0.5, altasD: 10, precioPct: 0, precioMes: 1, churnPrecio: 0, ipc: 0, salario: 0, salarioMes: 1, trm: 0, porque: 'El plan de acción funciona.' },
+  { id: 'e3', name: 'Hipótesis macro (editar)', churnD: 0, altasD: 0, precioPct: 6, precioMes: 1, churnPrecio: 0.5, ipc: 5, salario: 8, salarioMes: 1, trm: 0, porque: 'Valores de ejemplo: ajústalos o pídele a Claude que proponga hipótesis.' }
+];
+function defaultSup(doc, hist) {
+  const b = doc.base || {};
+  const A0 = b.afiliados;
+  if (!isNum(A0) || A0 <= 0) return null;
+  let churn = b.churn_pct;
+  if (!isNum(churn) && isNum(b.bajas) && isNum(b.altas)) churn = 100 * b.bajas / (A0 - b.altas + b.bajas);
+  let altas = b.altas;
+  if (!isNum(altas) && isNum(b.bajas)) altas = b.bajas;
+  const last = hist.slice(-3).map(d => d.base || {}), nota = [];
+  if (last.length >= 2) {
+    const ch = last.map(x => x.churn_pct).filter(isNum), al = last.map(x => x.altas).filter(isNum);
+    if (ch.length >= 2) { churn = ch.reduce((a, c) => a + c, 0) / ch.length; nota.push('churn'); }
+    if (al.length >= 2) { altas = Math.round(al.reduce((a, c) => a + c, 0) / al.length); nota.push('altas'); }
+  }
+  if (!isNum(churn) || !isNum(altas)) return null;
+  const ipa = isNum(b.ingresos_mn) ? b.ingresos_mn * 1e6 / A0 : (isNum(b.arpu) ? b.arpu : null);
+  let costos = isNum(b.costos_mn) ? b.costos_mn : (isNum(b.ingresos_mn) && isNum(b.ebitda_mn) ? b.ingresos_mn - b.ebitda_mn : null);
+  const nomPct = isNum(b.nomina_mn) && costos ? Math.round(100 * b.nomina_mn / costos) : 40;
+  const usdPct = isNum(b.costos_usd_mn) && costos ? Math.round(100 * b.costos_usd_mn / costos) : 5;
+  return { A0, churn: +churn.toFixed(2), altas: Math.round(altas), ipa: ipa ? Math.round(ipa) : null, g: 0, costos: costos != null ? Math.round(costos) : null,
+    nomPct, usdPct, nomReal: isNum(b.nomina_mn), N: 12, metaA: null, metaI: null, nota };
+}
+function run(s, e, N, mes0) {
+  const out = []; let A = s.A0, pf = 1, sf = 1, lastPrice = null;
+  const nom = (s.nomPct || 0) / 100, usd = (s.usdPct || 0) / 100, otros = Math.max(0, 1 - nom - usd);
+  for (let t = 1; t <= N; t++) {
+    const m = +addMonth(mes0, t).split('-')[1];
+    if (e.precioPct && m === +e.precioMes) { pf *= 1 + e.precioPct / 100; lastPrice = t; }
+    if (e.salario && m === +e.salarioMes) sf *= 1 + e.salario / 100;
+    const c = Math.max(0, s.churn + (e.churnD || 0) + (lastPrice != null && t - lastPrice < 3 ? (e.churnPrecio || 0) : 0));
+    const a = Math.max(0, s.altas * (1 + (e.altasD || 0) / 100));
+    const bajas = A * c / 100; A = A - bajas + a;
+    const ing = s.ipa ? A * s.ipa * pf * Math.pow(1 + (s.g || 0) / 100, t) / 1e6 : null;
+    const cost = s.costos != null ? s.costos * (nom * sf + usd * Math.pow(1 + (e.trm || 0) / 100, t / 12) + otros * Math.pow(1 + (e.ipc || 0) / 100, t / 12)) : null;
+    out.push({ t, mes: addMonth(mes0, t), afiliados: A, bajas, altas: a, churn: c, ingresos: ing, costos: cost, ebitda: ing != null && cost != null ? ing - cost : null });
+  }
+  return out;
+}
+const sum = (rows, k) => rows.some(r => r[k] == null) ? null : rows.reduce((a, r) => a + r[k], 0);
+function sensibilidad(s, e, N, mes0) {
+  const base = run(s, {}, N, mes0), metric = s.costos != null ? 'ebitda' : 'ingresos', b0 = sum(base, metric);
+  return GROUPS.map(g => {
+    const only = {}; LEVERS.filter(l => l.group === g).forEach(l => only[l.k] = e[l.k]);
+    if (!LEVERS.filter(l => l.group === g && !l.month).some(l => e[l.k])) return null;
+    const v = sum(run(s, only, N, mes0), metric);
+    return v == null || b0 == null ? null : { g, d: v - b0 };
+  }).filter(Boolean).sort((a, b) => Math.abs(b.d) - Math.abs(a.d));
+}
+function altasParaMeta(s, M) { const r = 1 - s.churn / 100, rn = Math.pow(r, s.N); return r === 1 ? (M - s.A0) / s.N : (M - s.A0 * rn) * (1 - r) / (1 - rn); }
+function churnParaMeta(s, M, mes0) {
+  let lo = 0, hi = 30; const end = c => run({ ...s, churn: c }, {}, s.N, mes0).at(-1).afiliados;
+  if (end(lo) < M) return null; if (end(hi) > M) return hi;
+  for (let i = 0; i < 40; i++) { const m = (lo + hi) / 2; if (end(m) > M) lo = m; else hi = m; }
+  return (lo + hi) / 2;
+}
+
+/* ---------- escenarios guardados ---------- */
+let escTimer = null, escSaving = false, escPending = false;
+function escFor(sede) { const d = state.escDocs.find(x => x.id === slug(sede)); return Array.isArray(d?.lista) && d.lista.length ? JSON.parse(JSON.stringify(d.lista)) : DEFAULT_ESC(); }
+function saveEsc() {
+  if (!db || state.current?._ejemplo) return;
+  clearTimeout(escTimer);
+  escTimer = setTimeout(async () => {
+    if (escSaving) { escPending = true; return; }
+    escSaving = true;
+    try { await db.collection('escenarios').doc(slug(state.current.sede)).set({ sede: state.current.sede, lista: JSON.parse(JSON.stringify(state.esc)), actualizado: new Date().toISOString() }); }
+    catch { setStatus('No se pudieron guardar los escenarios.', true); }
+    escSaving = false; if (escPending) { escPending = false; saveEsc(); }
+  }, 1200);
+}
+
+/* ---------- render proyección ---------- */
+function show(doc) {
+  state.current = doc; renderHist();
+  const hist = doc._ejemplo ? [] : withDoc(docsFor(doc.sede), doc);
+  state.sup = defaultSup(doc, hist);
+  state.esc = doc._ejemplo ? DEFAULT_ESC() : escFor(doc.sede);
+  renderReport(doc);
+  renderProj();
+}
+function numInput(id, val, step, onChange) {
+  const i = document.createElement('input'); i.type = 'number'; i.id = id; i.step = step; i.value = val ?? '';
+  i.addEventListener('input', () => onChange(i.value === '' ? null : Number(i.value))); return i;
+}
+function renderProj() {
+  const P = $('#projPanel'), doc = state.current, s = state.sup; P.replaceChildren();
+  const head = el('div', 'row'); head.style.justifyContent = 'space-between';
+  head.append(el('h2', null, `Proyección · ${doc.sede}`), el('span', 'src', `Mes base: ${mesLabel(doc.mes)}`));
+  P.append(head);
+  if (!s) { P.append(el('p', 'empty', 'El informe no trae afiliados, altas o churn suficientes para proyectar. Sube un archivo que los incluya.')); return; }
+
+  P.append(el('div', 'label', 'Punto de partida (puedes cambiarlo)'));
+  const g = el('div', 'assump');
+  const field = (key, label, step, hint) => {
+    const l = el('label', 'f'); l.htmlFor = 's-' + key; l.append(label, numInput('s-' + key, s[key], step, v => { s[key] = v; drawProj(); }));
+    if (hint) l.append(el('small', null, hint)); g.append(l);
+  };
+  field('A0', 'Afiliados hoy', 1);
+  field('churn', 'Churn mensual %', 0.1, s.nota.includes('churn') ? 'promedio real' : 'del mes base');
+  field('altas', 'Altas por mes', 1, s.nota.includes('altas') ? 'promedio real' : 'del mes base');
+  field('ipa', 'Ingreso por afiliado', 1000, 'ingresos ÷ afiliados');
+  field('g', 'Crec. ingreso/afiliado %/mes', 0.1);
+  field('costos', 'Costos Mn/mes', 1, 'ingresos − EBITDA');
+  field('nomPct', 'Nómina % de costos', 1, s.nomReal ? 'del archivo' : 'supuesto: ajústalo');
+  field('usdPct', 'Costos en dólares %', 1, 'equipos, licencias');
+  field('N', 'Meses a proyectar', 1);
+  field('metaA', 'Meta afiliados', 1, 'al final del horizonte');
+  field('metaI', 'Meta ingresos Mn', 1, 'mes final');
+  P.append(g);
+
+  // hipótesis
+  const hh = el('div', 'row'); hh.style.justifyContent = 'space-between';
+  hh.append(el('div', 'label', 'Hipótesis por escenario'));
+  const add = el('button', 'btn ghost sm', 'Agregar escenario'); add.type = 'button';
+  add.onclick = () => { if (state.esc.length >= 5) return setStatus('Máximo 5 escenarios.', true); state.esc.push({ id: 'e' + Date.now(), name: 'Escenario ' + (state.esc.length + 1), precioMes: 1, salarioMes: 1, porque: '' }); saveEsc(); renderProj(); };
+  hh.append(add); P.append(hh);
+  const ai = el('div', 'ai');
+  const ctx = document.createElement('input'); ctx.type = 'text'; ctx.id = 'escCtx'; ctx.placeholder = 'Contexto para Claude: ej. aumento del salario mínimo 2027, IPC a la baja, nueva competencia en la zona';
+  const prop = el('button', 'btn sm', 'Proponer hipótesis con Claude'); prop.type = 'button'; prop.onclick = () => proponer(ctx.value, prop);
+  ai.append(ctx, prop); P.append(ai);
+  const box = el('div', 'esc');
+  state.esc.forEach((e, idx) => {
+    const c = el('div', 'esc-card'); c.style.borderTopColor = COLORS[idx % COLORS.length];
+    const top = el('div', 'row');
+    const nm = document.createElement('input'); nm.type = 'text'; nm.id = 'n-' + e.id; nm.value = e.name || ''; nm.setAttribute('aria-label', 'Nombre del escenario');
+    nm.addEventListener('input', () => { e.name = nm.value; saveEsc(); drawProj(); });
+    const del = el('button', 'btn ghost sm', 'Quitar'); del.type = 'button';
+    del.onclick = () => { state.esc = state.esc.filter(x => x !== e); saveEsc(); renderProj(); };
+    top.append(nm, del); nm.style.flex = '1'; c.append(top);
+    const gg = el('div', 'esc-grid');
+    LEVERS.forEach(l => {
+      const lab = el('label', 'f'); lab.htmlFor = l.k + '-' + e.id; lab.append(l.label);
+      if (l.month) {
+        const sel = document.createElement('select'); sel.id = l.k + '-' + e.id;
+        MES.forEach((m, i) => { const o = el('option', null, m); o.value = i + 1; sel.append(o); }); sel.value = e[l.k] || 1;
+        sel.addEventListener('change', () => { e[l.k] = +sel.value; saveEsc(); drawProj(); }); lab.append(sel);
+      } else lab.append(numInput(l.k + '-' + e.id, e[l.k] ?? 0, l.step, v => { e[l.k] = v || 0; saveEsc(); drawProj(); }));
+      gg.append(lab);
+    });
+    c.append(gg);
+    const why = document.createElement('input'); why.type = 'text'; why.id = 'w-' + e.id; why.value = e.porque || ''; why.placeholder = 'Por qué: el supuesto detrás de este escenario';
+    why.setAttribute('aria-label', 'Justificación'); why.addEventListener('input', () => { e.porque = why.value; saveEsc(); });
+    c.append(why); box.append(c);
+  });
+  P.append(box);
+  const outEl = el('div'); outEl.id = 'projOut'; P.append(outEl);
+  drawProj();
+}
+async function proponer(contexto, btn) {
+  if (!sample) return setStatus('Claude no está disponible en esta vista.', true);
+  const s = state.sup, doc = state.current;
+  btn.disabled = true; setStatus('Claude está armando las hipótesis…');
+  try {
+    const r = await sample.json(`Eres analista financiero. Propón 3 escenarios de hipótesis económicas para proyectar ${s.N} meses desde ${doc.mes} una unidad de negocio.
+Negocio: ${doc.negocio || $('#negocio').value}. Sede: ${doc.sede}. País: el del material (si no se sabe, Colombia).
+Punto de partida: ${num(s.A0)} afiliados, churn ${s.churn} % mensual, ${s.altas} altas/mes, ingreso por afiliado ${num(s.ipa)}, costos ${s.costos ?? 'sin dato'} Mn/mes, nómina ${s.nomPct} % de costos, costos en dólares ${s.usdPct} %.
+Contexto del usuario: ${contexto || 'ninguno; usa el entorno macro esperado'}.
+Para cada escenario define: churnD (pts de cambio en churn mensual), altasD (% de cambio en altas), precioPct (% de ajuste de tarifa), precioMes (1-12), churnPrecio (pts extra de churn los 3 meses tras el ajuste), ipc (% inflación anual que afecta otros costos), salario (% aumento de nómina), salarioMes (1-12), trm (% variación anual del dólar), porque (una frase con el supuesto y la cifra de referencia que usaste, y si es tu estimación).
+Escenarios: uno base realista, uno adverso y uno favorable. Cifras concretas y moderadas. Son hipótesis, no pronósticos.
+Responde SOLO un JSON: [{"name":"","churnD":0,"altasD":0,"precioPct":0,"precioMes":1,"churnPrecio":0,"ipc":0,"salario":0,"salarioMes":1,"trm":0,"porque":""}]`, { cache: false });
+    if (!Array.isArray(r) || !r.length) throw { code: 'invalid_json' };
+    state.esc = r.slice(0, 5).map((x, i) => {
+      const e = { id: 'e' + Date.now() + i, name: String(x.name || 'Escenario ' + (i + 1)), porque: String(x.porque || '') };
+      LEVERS.forEach(l => { const v = Number(x[l.k]); e[l.k] = isFinite(v) ? (l.month ? Math.min(12, Math.max(1, Math.round(v))) : v) : (l.month ? 1 : 0); });
+      return e;
+    });
+    saveEsc(); renderProj(); setStatus('Hipótesis propuestas. Revísalas y ajústalas: son supuestos, no datos.');
+  } catch (e) { setStatus(e?.code === 'not_granted' ? 'No se dio permiso para usar Claude.' : e?.code === 'rate_limited' ? 'Límite de uso alcanzado. Intenta en unos minutos.' : 'No se pudieron generar las hipótesis. Intenta de nuevo.', true); }
+  finally { btn.disabled = false; }
+}
+function drawProj() {
+  const out = $('#projOut'); if (!out) return; out.replaceChildren(); out.style.display = 'grid'; out.style.gap = '14px';
+  const s = state.sup, doc = state.current;
+  if (![s.A0, s.churn, s.altas, s.N].every(isNum) || s.N < 1) { out.append(el('p', 'empty', 'Completa afiliados, churn, altas y meses.')); return; }
+  s.N = Math.min(36, Math.max(1, Math.round(s.N)));
+  const base = { name: 'Ritmo actual', color: 'var(--accent)', key: 'base', rows: run(s, {}, s.N, doc.mes), e: {} };
+  const sc = [base, ...state.esc.map((e, i) => ({ name: e.name || 'Escenario', color: COLORS[i % COLORS.length], key: e.id, rows: run(s, e, s.N, doc.mes), e }))];
+  const endMes = addMonth(doc.mes, s.N), endB = base.rows.at(-1);
+  const hist = doc._ejemplo ? [] : withDoc(docsFor(doc.sede), doc);
+
+  // lectura
+  const R = el('div', 'read'), eq = s.churn > 0 ? s.altas / (s.churn / 100) : null, lines = [];
+  lines.push(`Sin cambios (churn ${num(s.churn, 2)} %, ${num(s.altas)} altas/mes, costos constantes), la sede termina ${mesLabel(endMes)} con <b>${num(endB.afiliados)} afiliados</b>` + (endB.ingresos != null ? `, ingresos de <b>${mn(endB.ingresos)}</b>/mes` : '') + (endB.ebitda != null ? ` y EBITDA de <b>${mn(endB.ebitda)}</b>/mes` : '') + '.');
+  if (eq) lines.push(`La base se estabiliza en <b>${num(eq)} afiliados</b> (altas ÷ churn): ${eq < s.A0 ? 'por debajo de hoy, así que sin cambios la base sigue cayendo.' : 'por encima de hoy, así que hay espacio para crecer.'}`);
+  const metric = s.costos != null ? 'ebitda' : 'ingresos', mLabel = s.costos != null ? 'EBITDA acumulado' : 'ingreso acumulado';
+  const ranked = sc.slice(1).map(x => ({ x, v: sum(x.rows, metric) })).filter(r => r.v != null).sort((a, b) => a.v - b.v);
+  if (ranked.length) {
+    const w = ranked[0], bst = ranked.at(-1), b0 = sum(base.rows, metric);
+    lines.push(`Rango de ${mLabel} a ${s.N} meses: de <b>${mn(w.v)}</b> (${w.x.name}) a <b>${mn(bst.v)}</b> (${bst.x.name}). Sin cambios: ${mn(b0)}.`);
+    const sens = sensibilidad(s, w.x.e, s.N, doc.mes);
+    if (sens.length) lines.push(`En “${w.x.name}”, la hipótesis que más mueve el ${mLabel} es <b>${sens[0].g.toLowerCase()}</b> (${mn(sens[0].d)}).`);
+    const neg = sc.slice(1).map(x => ({ x, r: x.rows.find(r => r.ebitda != null && r.ebitda < 0) })).filter(z => z.r);
+    if (neg.length) lines.push(`EBITDA negativo: ${neg.map(z => `${z.x.name} desde ${mesLabel(z.r.mes)}`).join('; ')}.`);
+  }
+  const metaA = isNum(s.metaA) ? s.metaA : (isNum(s.metaI) && s.ipa ? s.metaI * 1e6 / (s.ipa * Math.pow(1 + (s.g || 0) / 100, s.N)) : null);
+  if (metaA) {
+    const need = altasParaMeta(s, metaA), c = churnParaMeta(s, metaA, doc.mes);
+    const et = isNum(s.metaA) ? `la meta de ${num(metaA)} afiliados` : `la meta de ${mn(s.metaI)} (≈ ${num(metaA)} afiliados sin ajustes de precio)`;
+    lines.push(endB.afiliados >= metaA ? `Sin cambios se cumple ${et}.` : `Para ${et} en ${mesLabel(endMes)} hacen falta <b>${num(Math.ceil(need))} altas/mes</b> (hoy ${num(s.altas)})` + (c != null ? ` o bajar el churn a <b>${num(c, 2)} %</b>.` : '. Con las altas actuales no alcanza ni con churn en cero.'));
+  }
+  if (s.costos != null && s.ipa) lines.push(`Punto de equilibrio hoy: ${num(s.costos * 1e6 / s.ipa)} afiliados.`);
+  lines.forEach(t => { const p = el('p'); p.innerHTML = t; R.append(p); }); out.append(R);
+
+  // real vs proyectado
+  const prev = hist.find(d => d.mes === addMonth(doc.mes, -1));
+  if (prev?.proy_siguiente && !doc._ejemplo) {
+    const v = el('div', 'vs'); v.append(el('h3', null, `${mesLabel(doc.mes)}: real contra lo proyectado en ${mesLabel(prev.mes)}`));
+    const b = doc.base || {}, ps = prev.proy_siguiente;
+    const rows = [['Afiliados', ps.afiliados, b.afiliados, num], ['Ingresos', ps.ingresos_mn, b.ingresos_mn, mn], ['EBITDA', ps.ebitda_mn, b.ebitda_mn, mn]]
+      .filter(r => isNum(r[1]) && isNum(r[2])).map(([n, p, r, f]) => {
+        const tr = el('tr'), d = p ? (r - p) / Math.abs(p) * 100 : null;
+        tr.append(el('td', null, n), el('td', 'num r', f(p)), el('td', 'num r', f(r)), el('td', 'num r dev ' + (d >= 0 ? 'pos' : 'neg'), d == null ? '—' : (d >= 0 ? '+' : '') + num(d, 1) + ' %')); return tr;
+      });
+    if (rows.length) { v.append(table([['Indicador'], ['Proyectado', 1], ['Real', 1], ['Desviación', 1]], rows)); out.append(v); }
+  }
+
+  // gráficos
+  const charts = el('div', 'charts');
+  const real = k => [...hist.filter(d => d.mes < doc.mes && isNum(d.base?.[k])).map(d => ({ m: d.mes, y: d.base[k] }))];
+  charts.append(chart('Afiliados', doc.mes, s.N, [...real('afiliados'), { m: doc.mes, y: s.A0 }], sc.map(x => ({ ...x, pts: x.rows.map(r => r.afiliados) })), metaA, v => num(v)));
+  if (endB.ingresos != null) charts.append(chart('Ingresos (Mn)', doc.mes, s.N, [...real('ingresos_mn'), { m: doc.mes, y: s.A0 * s.ipa / 1e6 }], sc.map(x => ({ ...x, pts: x.rows.map(r => r.ingresos) })), isNum(s.metaI) ? s.metaI : null, v => num(v)));
+  if (endB.ebitda != null) charts.append(chart('EBITDA (Mn)', doc.mes, s.N, [...real('ebitda_mn'), { m: doc.mes, y: s.A0 * s.ipa / 1e6 - s.costos }], sc.map(x => ({ ...x, pts: x.rows.map(r => r.ebitda) })), 0, v => num(v)));
+  out.append(charts);
+  const lg = el('div', 'legend');
+  sc.forEach(x => { const sp = el('span'); const i = el('i'); i.style.background = x.color; sp.append(i, x.name); lg.append(sp); });
+  const sp = el('span'); const i = el('i'); i.style.background = 'var(--fg)'; sp.append(i, 'Real'); lg.append(sp); out.append(lg);
+
+  // comparación de escenarios
+  const b0 = sum(base.rows, metric);
+  out.append(el('h3', null, `Comparación a ${mesLabel(endMes)}`));
+  out.append(table([['Escenario'], ['Afiliados', 1], ['Ingresos mes final', 1], ['EBITDA mes final', 1], [mLabel, 1], ['vs sin cambios', 1], ['Hipótesis que más pesa']], sc.map(x => {
+    const e = x.rows.at(-1), v = sum(x.rows, metric), tr = el('tr'), nm = el('td', 'st'); nm.style.borderLeftColor = x.color; nm.append(x.name);
+    if (x.e.porque) nm.append(el('div', 'src', x.e.porque));
+    const sens = x.key === 'base' ? [] : sensibilidad(s, x.e, s.N, doc.mes);
+    tr.append(nm, el('td', 'num r', num(e.afiliados)), el('td', 'num r', mn(e.ingresos)), el('td', 'num r', mn(e.ebitda)), el('td', 'num r', mn(v)),
+      el('td', 'num r', x.key === 'base' || v == null ? '—' : (v - b0 >= 0 ? '+' : '') + mn(v - b0)), el('td', null, sens.length ? `${sens[0].g} (${mn(sens[0].d)})` : '—'));
+    return tr;
+  })));
+
+  // detalle mensual
+  const dh = el('div', 'row'); dh.append(el('h3', null, 'Detalle mensual'));
+  const sel = document.createElement('select'); sel.id = 'detSel'; sel.style.width = 'auto'; sel.setAttribute('aria-label', 'Escenario del detalle');
+  sc.forEach((x, k) => { const o = el('option', null, x.name); o.value = k; sel.append(o); }); sel.value = state.det || 0;
+  const det = el('div');
+  const drawDet = () => { state.det = +sel.value; det.replaceChildren(table([['Mes'], ['Afiliados', 1], ['Altas', 1], ['Bajas', 1], ['Churn', 1], ['Ingresos', 1], ['Costos', 1], ['EBITDA', 1]], (sc[state.det] || base).rows.map(r => {
+    const tr = el('tr'); tr.append(el('td', null, mesLabel(r.mes)), el('td', 'num r', num(r.afiliados)), el('td', 'num r', num(r.altas)), el('td', 'num r', num(r.bajas)), el('td', 'num r', pct(r.churn)), el('td', 'num r', mn(r.ingresos)), el('td', 'num r', mn(r.costos)), el('td', 'num r', mn(r.ebitda))); return tr;
+  }))); };
+  sel.onchange = drawDet; dh.append(sel); out.append(dh, det); drawDet();
+
+  if (hist.length >= 2) {
+    out.append(el('h3', null, 'Historial real de la sede'));
+    out.append(table([['Mes'], ['Afiliados', 1], ['Altas', 1], ['Bajas', 1], ['Churn', 1], ['Ingresos', 1], ['EBITDA', 1]], hist.map(d => {
+      const b = d.base || {}, tr = el('tr');
+      tr.append(el('td', null, mesLabel(d.mes)), el('td', 'num r', num(b.afiliados)), el('td', 'num r', num(b.altas)), el('td', 'num r', num(b.bajas)), el('td', 'num r', pct(b.churn_pct)), el('td', 'num r', mn(b.ingresos_mn)), el('td', 'num r', mn(b.ebitda_mn)));
+      return tr;
+    })));
+  }
+  out.append(el('p', 'src', 'Modelo: afiliados = base anterior × (1 − churn) + altas. Ingresos = afiliados × ingreso por afiliado × ajustes de precio. Costos = costos del mes base repartidos en nómina (sube con el aumento en su mes), dólar (sigue la TRM) y resto (sigue la inflación). EBITDA = ingresos − costos. Las hipótesis son supuestos editables, no pronósticos.'));
+}
+
+function chart(title, mes0, N, real, series, meta, fmt) {
+  const W = 560, H = 230, L = 58, Rr = 14, T = 14, B = 30;
+  const x0 = real.length ? Math.min(...real.map(p => monthsDiff(mes0, p.m))) : 0;
+  const all = [...real.map(p => p.y), ...series.flatMap(s => s.pts)].filter(isNum); if (isNum(meta)) all.push(meta);
+  let lo = Math.min(...all), hi = Math.max(...all); const pad = (hi - lo) * 0.12 || Math.abs(hi) * 0.05 || 1; lo -= pad; hi += pad;
+  const X = i => L + (i - x0) / Math.max(1, N - x0) * (W - L - Rr), Y = v => T + (hi - v) / (hi - lo) * (H - T - B);
+  const ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('role', 'img'); svg.setAttribute('aria-label', title);
+  const mk = (tag, a, txt) => { const e = document.createElementNS(ns, tag); for (const k in a) e.setAttribute(k, a[k]); if (txt != null) e.textContent = txt; svg.append(e); return e; };
+  for (let k = 0; k <= 4; k++) { const v = lo + (hi - lo) * k / 4; mk('line', { x1: L, x2: W - Rr, y1: Y(v), y2: Y(v), class: 'grid-l' }); mk('text', { x: L - 6, y: Y(v) + 3, 'text-anchor': 'end', class: 'ax' }, fmt(v)); }
+  const span = N - x0, step = Math.max(1, Math.ceil(span / 7));
+  for (let i = x0; i <= N; i += step) mk('text', { x: X(i), y: H - 10, 'text-anchor': 'middle', class: 'ax' }, mesLabel(addMonth(mes0, i)));
+  if (isNum(meta)) { mk('line', { x1: L, x2: W - Rr, y1: Y(meta), y2: Y(meta), stroke: 'var(--warn)', 'stroke-width': 1.5, 'stroke-dasharray': '5 4', fill: 'none' }); mk('text', { x: W - Rr, y: Y(meta) - 5, 'text-anchor': 'end', class: 'ax' }, 'meta ' + fmt(meta)); }
+  mk('line', { x1: X(0), x2: X(0), y1: T, y2: H - B, stroke: 'var(--line)', 'stroke-dasharray': '2 3' });
+  const y0 = real.at(-1)?.y;
+  series.forEach(s => { const d = [`M${X(0)},${Y(y0)}`, ...s.pts.map((v, i) => `L${X(i + 1)},${Y(v)}`)].join(''); mk('path', { d, fill: 'none', stroke: s.color, 'stroke-width': s.key === 'tend' ? 2.5 : 1.75 }); const v = s.pts.at(-1); mk('circle', { cx: X(N), cy: Y(v), r: 3.5, fill: s.color }); });
+  if (real.length > 1) mk('path', { d: real.map((p, i) => `${i ? 'L' : 'M'}${X(monthsDiff(mes0, p.m))},${Y(p.y)}`).join(''), fill: 'none', stroke: 'var(--fg)', 'stroke-width': 2 });
+  real.forEach(p => mk('circle', { cx: X(monthsDiff(mes0, p.m)), cy: Y(p.y), r: 3.5, fill: 'var(--fg)' }));
+  const box = el('div', 'chart'); box.append(el('div', 'label', title), svg); return box;
+}
+function monthsDiff(a, b) { const [ya, ma] = a.split('-').map(Number), [yb, mb] = b.split('-').map(Number); return (yb * 12 + mb) - (ya * 12 + ma); }
+
+/* ---------- render informe ---------- */
 const ST = { bueno: 'Bien', atencion: 'Atención', critico: 'Crítico' };
-const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z]/g, '');
 function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
 function list(items) { const ul = el('ul', 'plain'); (items || []).filter(Boolean).forEach(t => ul.append(el('li', null, t))); return ul; }
 function table(head, rows) {
   const box = el('div', 'tablebox'), t = el('table'), tr = el('tr');
-  head.forEach(h => tr.append(el('th', null, h))); const th = el('thead'); th.append(tr); t.append(th);
+  head.forEach(h => { const [txt, r] = Array.isArray(h) ? h : [h]; tr.append(el('th', r ? 'num' : null, txt)); });
+  const th = el('thead'); th.append(tr); t.append(th);
   const tb = el('tbody'); rows.forEach(r => tb.append(r)); t.append(tb); box.append(t); return box;
 }
-function render(d) {
-  const R = $('#report'); R.replaceChildren();
-  if (d._ejemplo) R.append(el('span', 'example', 'Ejemplo: así se ve un informe. Sube tus archivos para generar el tuyo.'));
+function renderReport(doc) {
+  const d = doc.informe || {}, R = $('#report'); R.replaceChildren();
+  if (doc._ejemplo) R.append(el('span', 'example', 'Ejemplo: así se ve un informe. Sube tus archivos para generar el tuyo.'));
   const g = norm(d.estado_general);
-  const v = el('div', 'verdict'); v.append(el('span', 'pill s-' + g, ST[g] || d.estado_general));
-  const vt = el('div'); vt.append(el('h2', null, 'Diagnóstico')); const p = el('p', null, d.resumen); p.style.margin = '4px 0 0'; vt.append(p); v.append(vt); R.append(v);
+  const v = el('div', 'verdict'); v.append(el('span', 'pill s-' + g, ST[g] || d.estado_general || '—'));
+  const vt = el('div'); vt.append(el('h2', null, `Diagnóstico · ${doc.sede} · ${mesLabel(doc.mes)}`)); const p = el('p', null, d.resumen); p.style.margin = '4px 0 0'; vt.append(p); v.append(vt); R.append(v);
   if (d.fuentes?.length) R.append(el('div', 'src', 'Fuente: ' + d.fuentes.join(' · ')));
-
-  if (d.prioridad?.accion) {
-    const pr = el('div', 'priority'); pr.append(el('div', 'label', 'Acción prioritaria'), el('p', 'a', d.prioridad.accion), el('p', 'src', d.prioridad.porque)); R.append(pr);
+  if (d.prioridad?.accion) { const pr = el('div', 'priority'); pr.append(el('div', 'label', 'Acción prioritaria'), el('p', 'a', d.prioridad.accion), el('p', 'src', d.prioridad.porque)); R.append(pr); }
+  if (d.indicadores?.length) {
+    R.append(el('h3', null, 'Indicadores identificados'));
+    R.append(table(['Indicador', 'Valor', 'Referencia', 'Estado', 'Lectura'], d.indicadores.map(i => {
+      const s = norm(i.estado), tr = el('tr'), n = el('td', 'st ' + s);
+      n.append(el('div', null, i.nombre)); if (i.periodo) n.append(el('div', 'src', i.periodo));
+      const st = el('td'); st.append(el('span', 'pill s-' + s, ST[s] || i.estado));
+      tr.append(n, el('td', 'num', i.valor), el('td', 'num', i.referencia), st, el('td', null, i.lectura)); return tr;
+    })));
   }
-
-  R.append(el('h3', null, 'Indicadores identificados'));
-  R.append(table(['Indicador', 'Valor', 'Referencia', 'Estado', 'Lectura'], d.indicadores.map(i => {
-    const s = norm(i.estado), tr = el('tr');
-    const n = el('td', 'st ' + s); n.append(el('div', null, i.nombre)); if (i.periodo) { const pp = el('div', 'src', i.periodo); n.append(pp); }
-    const st = el('td'); st.append(el('span', 'pill s-' + s, ST[s] || i.estado));
-    tr.append(n, el('td', 'num', i.valor), el('td', 'num', i.referencia), st, el('td', null, i.lectura)); return tr;
-  })));
-
   if (d.hallazgos?.length) { R.append(el('h3', null, 'Hallazgos')); R.append(list(d.hallazgos)); }
-
   if (d.plan?.length) {
     R.append(el('h3', null, 'Plan de acción'));
     R.append(table(['Acción', 'Responsable', 'Plazo', 'KPI objetivo', 'Prioridad'], d.plan.map(a => {
@@ -360,46 +736,65 @@ function render(d) {
       const pr = el('td'); pr.append(el('span', 'prio ' + norm(a.prioridad), a.prioridad)); tr.append(pr); return tr;
     })));
   }
-
-  const how = el('div', 'how'); how.append(el('h3', null, 'Cómo trabajar estos indicadores'));
-  const two = el('div', 'two');
-  const c1 = el('div'); c1.append(el('div', 'label', 'Cadencia de revisión'));
-  c1.append(list((d.como_trabajar?.cadencia || []).map(c => `${c.frecuencia}: ${c.que_revisar}`)));
-  const c2 = el('div'); c2.append(el('div', 'label', 'Reglas')); c2.append(list(d.como_trabajar?.reglas));
-  two.append(c1, c2); how.append(two); R.append(how);
-
+  if (d.como_trabajar) {
+    const how = el('div', 'how'); how.append(el('h3', null, 'Cómo trabajar estos indicadores'));
+    const two = el('div', 'two'), c1 = el('div'), c2 = el('div');
+    c1.append(el('div', 'label', 'Cadencia de revisión'), list((d.como_trabajar.cadencia || []).map(c => `${c.frecuencia}: ${c.que_revisar}`)));
+    c2.append(el('div', 'label', 'Reglas'), list(d.como_trabajar.reglas));
+    two.append(c1, c2); how.append(two); R.append(how);
+  }
   if (d.datos_faltantes?.length) { R.append(el('h3', null, 'Datos que faltan para un análisis completo')); R.append(list(d.datos_faltantes)); }
-
-  if (!d._ejemplo && downloads) {
-    const b = el('button', 'btn ghost', 'Descargar informe (.md)'); b.type = 'button'; b.style.justifySelf = 'start';
-    b.onclick = () => downloads.save({ filename: 'analisis-indicadores.md', data: toMd(d) }).catch(() => setStatus('No se pudo descargar.', true));
+  if (!doc._ejemplo && downloads) {
+    const b = el('button', 'btn ghost', 'Descargar informe y proyección (.md)'); b.type = 'button'; b.style.justifySelf = 'start';
+    b.onclick = () => downloads.save({ filename: `analisis-${slug(doc.sede)}-${doc.mes}.md`, data: toMd(doc) }).catch(() => setStatus('No se pudo descargar.', true));
     R.append(b);
   }
 }
-function toMd(d) {
-  const L = [`# Análisis de indicadores`, ``, `**Estado:** ${ST[norm(d.estado_general)] || d.estado_general}`, ``, d.resumen, ``,
+function toMd(doc) {
+  const d = doc.informe || {}, s = state.sup;
+  const L = [`# ${doc.sede} · ${mesLabel(doc.mes)}`, ``, `**Estado:** ${ST[norm(d.estado_general)] || d.estado_general}`, ``, d.resumen || '', ``,
     `## Acción prioritaria`, `${d.prioridad?.accion || ''} — ${d.prioridad?.porque || ''}`, ``, `## Indicadores`,
     `| Indicador | Valor | Referencia | Estado | Lectura |`, `|---|---|---|---|---|`,
-    ...d.indicadores.map(i => `| ${i.nombre} (${i.periodo || ''}) | ${i.valor} | ${i.referencia} | ${i.estado} | ${i.lectura} |`), ``,
+    ...(d.indicadores || []).map(i => `| ${i.nombre} | ${i.valor} | ${i.referencia} | ${i.estado} | ${i.lectura} |`), ``,
     `## Hallazgos`, ...(d.hallazgos || []).map(h => `- ${h}`), ``, `## Plan de acción`,
     `| Acción | Responsable | Plazo | KPI | Prioridad |`, `|---|---|---|---|---|`,
-    ...(d.plan || []).map(a => `| ${a.accion} | ${a.responsable} | ${a.plazo} | ${a.kpi_objetivo} | ${a.prioridad} |`), ``,
-    `## Cómo trabajar`, ...(d.como_trabajar?.cadencia || []).map(c => `- **${c.frecuencia}:** ${c.que_revisar}`), ...(d.como_trabajar?.reglas || []).map(r => `- ${r}`), ``,
-    `## Datos faltantes`, ...(d.datos_faltantes || []).map(x => `- ${x}`)];
+    ...(d.plan || []).map(a => `| ${a.accion} | ${a.responsable} | ${a.plazo} | ${a.kpi_objetivo} | ${a.prioridad} |`)];
+  if (s && isNum(s.N)) {
+    const sc = [{ name: 'Sin cambios', e: {} }, ...state.esc.map(e => ({ name: e.name, e }))].map(x => ({ ...x, rows: run(s, x.e, s.N, doc.mes) }));
+    L.push(``, `## Proyección (${s.N} meses)`, `Punto de partida: afiliados ${num(s.A0)}, churn ${num(s.churn, 2)} %, altas ${num(s.altas)}/mes, ingreso por afiliado ${num(s.ipa)}, costos ${mn(s.costos)}/mes (nómina ${s.nomPct} %, dólar ${s.usdPct} %).`, ``,
+      `| Escenario | Hipótesis | Afiliados ${mesLabel(addMonth(doc.mes, s.N))} | Ingresos mes final | EBITDA mes final | EBITDA acumulado |`, `|---|---|---|---|---|---|`,
+      ...sc.map(x => { const e = x.rows.at(-1); return `| ${x.name} | ${LEVERS.filter(l => !l.month && x.e[l.k]).map(l => `${l.label}: ${x.e[l.k]}`).join('; ') || '—'} | ${num(e.afiliados)} | ${mn(e.ingresos)} | ${mn(e.ebitda)} | ${mn(sum(x.rows, 'ebitda'))} |`; }));
+  }
   return L.join('\n');
 }
 
-render(EXAMPLE);
-
+/* ---------- arranque ---------- */
+show(EXAMPLE);
 (async () => {
-  if (!window.claude?.use) { setStatus('Abre esta página en claude.ai para analizar con Claude.', true); return; }
+  if (!window.claude?.use) { setStatus('Abre esta página en claude.ai para analizar y guardar.', true); return; }
   try {
-    sample = await claude.use('sample');
-    downloads = await claude.use('downloads');
-    if (!sample) { setStatus('El análisis con Claude no está disponible en esta vista.', true); return; }
-    const lim = await sample.limits().catch(() => null);
-    if (lim?.images?.maxCount) maxImages = lim.images.maxCount;
-    else if (lim) setStatus('Esta vista no envía imágenes: usa archivos HTML o texto.', true);
-  } catch { setStatus('El análisis con Claude no está disponible en esta vista.', true); }
+    [sample, downloads, db] = await Promise.all([claude.use('sample'), claude.use('downloads'), claude.use('db')]);
+    if (sample) {
+      const lim = await sample.limits().catch(() => null);
+      if (lim?.images?.maxCount) maxImages = lim.images.maxCount;
+      else if (lim) setStatus('Esta vista no envía imágenes: usa archivos HTML o texto.', true);
+    } else setStatus('El análisis con Claude no está disponible en esta vista. El historial y la proyección sí funcionan.', true);
+    if (db) {
+      const timer = setTimeout(() => setStatus('El historial tarda en cargar. Puedes analizar igual.', true), 10000);
+      let first = true;
+      db.collection('meses').onSnapshot(snap => {
+        clearTimeout(timer);
+        state.docs = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.sede && d.mes);
+        renderHist();
+        if (first && state.docs.length && state.current?._ejemplo) { first = false; show([...state.docs].sort((a, b) => (b.guardado || '').localeCompare(a.guardado || ''))[0]); }
+        first = false;
+      }, () => { clearTimeout(timer); setStatus('No se pudo leer el historial guardado.', true); });
+      db.collection('escenarios').onSnapshot(snap => {
+        const firstLoad = !state.escLoaded; state.escLoaded = true;
+        state.escDocs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        if (firstLoad && state.current && !state.current._ejemplo) { state.esc = escFor(state.current.sede); renderProj(); }
+      }, () => {});
+    }
+  } catch { setStatus('Algunas funciones no están disponibles en esta vista.', true); }
 })();
 </script>
