@@ -335,6 +335,7 @@ Reglas:
 - Números puros (sin $, sin %, punto decimal). ingresos_mn, ebitda_mn, costos_mn (costos totales), nomina_mn y costos_usd_mn (costos atados al dólar) en millones de la moneda local; arpu en unidades. Si un dato no aparece, null.
 - "var_anual" = variación contra el mismo mes del año anterior; "tendencia_3m" = últimos 3 meses vs 3 anteriores; "estacionalidad_siguiente" = lo que pasó el año pasado en el mes siguiente contra su mes previo. Solo si el material lo trae o se puede calcular de la serie; si no, null.
 - "supuestos_archivo": los supuestos de proyección que traiga el material (inflación, aumentos de precio o nómina, metas), en frases cortas con la cifra. "escenario_archivo": esos mismos supuestos expresados como palancas (null si el material no trae supuestos).
+- Si el material no trae "altas" con ese nombre, usa las unidades vendidas o afiliaciones nuevas del mes (total de unidades) y dilo en fuentes. Si no trae "bajas", calcúlalas con churn × afiliados del mes anterior.
 - "faltantes_proyeccion": cuáles de estos NO encontraste para el mes base: afiliados, altas, bajas, churn, ingresos, costos o EBITDA.
 - "fuentes": qué periodo y qué datos trae cada archivo; si un archivo no se pudo leer o no trae datos, dilo.
 - Para "referencia" usa la meta o el plan del material; si no hay, el referente que muestre; si no, un benchmark marcado como "benchmark".
